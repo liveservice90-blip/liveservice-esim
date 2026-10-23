@@ -1,32 +1,24 @@
-exports.handler = async (event) => {
-  const reply = (statusCode, data) => ({
-    statusCode,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
-    },
-    body: JSON.stringify(data)
-  });
+import { getStore } from "@netlify/blobs";
+import { randomUUID } from "node:crypto";
 
-  if (event.httpMethod !== "GET") {
-    return reply(405, {
-      error: "GET only"
+export default async (request) => {
+  const reply = (status, data) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store"
+      }
     });
+
+  if (request.method !== "GET") {
+    return reply(405, { error: "GET only" });
   }
 
   let store;
   let key;
 
   try {
-    const {
-      connectLambda,
-      getStore
-    } = require("@netlify/blobs");
-
-    const { randomUUID } = require("node:crypto");
-
-    connectLambda(event);
-
     store = getStore({
       name: "liveservice-storage-checks",
       consistency: "strong"
@@ -34,9 +26,7 @@ exports.handler = async (event) => {
 
     key = randomUUID();
 
-    await store.setJSON(key, {
-      test: key
-    });
+    await store.setJSON(key, { test: key });
 
     const saved = await store.get(key, {
       type: "json"
