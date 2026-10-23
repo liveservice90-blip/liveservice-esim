@@ -179,9 +179,17 @@ choose.onclick = async () => {
       throw new Error("السعر غير متاح حاليًا");
     }
 
-    status.textContent =
-      `السعر المؤكد: ${data.amount.toFixed(2)} ريال سعودي. ` +
-      "الدفع غير مفعّل بعد.";
+    if (!Array.isArray(data.methods) || !data.methods.length) {
+  throw new Error("وسائل الدفع غير متاحة حاليًا");
+}
+
+status.textContent =
+  `السعر المؤكد: ${data.amount.toFixed(2)} ريال سعودي. ` +
+  "وسائل الدفع المتاحة: " +
+  data.methods.map(method => method.name).join("، ") +
+  ". الدفع غير مفعّل بعد.";
+      
+  
   } catch (error) {
     status.textContent =
       error.message || "تعذر الاتصال، حاول مجددًا";
