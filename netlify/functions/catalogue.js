@@ -3,20 +3,25 @@ exports.handler = async (event) => {
     statusCode,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": statusCode === 200
-        ? "public, max-age=0, s-maxage=3600"
-        : "no-store"
+      "Cache-Control": "no-store"
     },
     body: JSON.stringify(data)
   });
 
   if (event.httpMethod !== "GET") {
-    return reply(405, { error: "GET only" });
+    return reply(405, {
+      error: "استخدم GET لعرض الباقات"
+    });
   }
 
   const key = process.env.ESIM_GO_API_KEY?.trim();
+
   const profit = Number(
     process.env.PROFIT_PERCENT?.trim() || "5"
+  );
+
+  const usdToSar = Number(
+    process.env.USD_TO_SAR?.trim() || "3.75"
   );
 
   if (!key) {
@@ -31,6 +36,12 @@ exports.handler = async (event) => {
     });
   }
 
+  if (!Number.isFinite(usdToSar) || usdToSar <= 0) {
+    return reply(500, {
+      error: "معامل تحويل الدولار إلى الريال غير صحيح"
+    });
+  }
+
   try {
     const bundles = new Map();
     const signal = AbortSignal.timeout(25000);
@@ -39,13 +50,14 @@ exports.handler = async (event) => {
       const url = new URL(
         "https://api.esim-go.com/v2.5/catalogue"
       );
-      url.searchParams.set("page", page);
-      url.searchParams.set("perPage", 500);
+
+      url.searchParams.set("page", String(page));
+      url.searchParams.set("perPage", "500");
 
       const response = await fetch(url, {
         headers: {
           "X-API-Key": key,
-          "Accept": "application/json"
+          Accept: "application/json"
         },
         signal
       });
@@ -58,6 +70,7 @@ exports.handler = async (event) => {
       }
 
       const data = await response.json();
+
       const items = Array.isArray(data)
         ? data
         : data.bundles;
@@ -76,40 +89,57 @@ exports.handler = async (event) => {
       let added = 0;
 
       for (const item of items) {
-        if (!item.name) {
+        if (
+          typeof item.name !== "string" ||
+          !item.name.trim()
+        ) {
           throw new Error("Missing bundle name");
         }
 
-        if (!bundles.has(item.name)) {
-          const cost = Number(item.price);
-
-          if (
-            item.price === null ||
-            item.price === undefined ||
-            item.price === "" ||
-            !Number.isFinite(cost) ||
-            cost < 0
-          ) {
-            throw new Error("Invalid price");
-          }
-
-          const salePrice = Number(
-            (cost * (1 + profit / 100)).toFixed(2)
-          );
-
-          added++;
-          bundles.set(item.name, {
-            name: item.name,
-            description: item.description,
-            countries: item.countries || [],
-            dataAmount: item.dataAmount,
-            duration: item.duration,
-            durationUnit: item.durationUnit || "day",
-            unlimited: item.unlimited,
-            salePrice,
-            currency: "SAR"
-          });
+        if (bundles.has(item.name)) {
+          continue;
         }
+
+        const rawPrice = item.price;
+        const costUsd = Number(rawPrice);
+
+        if (
+          rawPrice === null ||
+          rawPrice === undefined ||
+          String(rawPrice).trim() === "" ||
+          !Number.isFinite(costUsd) ||
+          costUsd < 0
+        ) {
+          throw new Error("Invalid price");
+        }
+
+        // تحويل تكلفة الباقة من الدولار إلى الريال.
+        const costSar = costUsd * usdToSar;
+
+        // إضافة نسبة الربح والتقريب إلى منزلتين.
+        const salePrice = Number(
+          (costSar * (1 + profit / 100)).toFixed(2)
+        );
+
+        if (!Number.isFinite(salePrice)) {
+          throw new Error("Invalid sale price");
+        }
+
+        bundles.set(item.name, {
+          name: item.name,
+          description: item.description,
+          countries: Array.isArray(item.countries)
+            ? item.countries
+            : [],
+          dataAmount: item.dataAmount,
+          duration: item.duration,
+          durationUnit: item.durationUnit || "day",
+          unlimited: item.unlimited,
+          salePrice,
+          currency: "SAR"
+        });
+
+        added++;
       }
 
       if (added === 0) {
