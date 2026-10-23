@@ -9,14 +9,20 @@ exports.handler = async (event) => {
   });
 
   if (event.httpMethod !== "GET") {
-    return reply(405, { error: "GET only" });
+    return reply(405, {
+      error: "GET only"
+    });
   }
 
   let store;
   let key;
 
   try {
-    const { connectLambda, getStore } = require("@netlify/blobs");
+    const {
+      connectLambda,
+      getStore
+    } = require("@netlify/blobs");
+
     const { randomUUID } = require("node:crypto");
 
     connectLambda(event);
@@ -28,9 +34,13 @@ exports.handler = async (event) => {
 
     key = randomUUID();
 
-    await store.setJSON(key, { test: key });
+    await store.setJSON(key, {
+      test: key
+    });
 
-    const saved = await store.get(key, { type: "json" });
+    const saved = await store.get(key, {
+      type: "json"
+    });
 
     if (saved?.test !== key) {
       throw new Error("Storage check failed");
@@ -39,14 +49,11 @@ exports.handler = async (event) => {
     return reply(200, {
       message: "تم التحقق من حفظ البيانات وقراءتها بنجاح"
     });
-} catch (error) {
-  return reply(500, {
-    error: "تعذر التحقق من التخزين",
-    type: error.name,
-    code: error.code || "UNKNOWN"
-  });
-
-  
+  } catch (error) {
+    return reply(500, {
+      error: "تعذر التحقق من التخزين",
+      type: error.name,
+      code: error.code || "UNKNOWN"
     });
   } finally {
     if (store && key) {
