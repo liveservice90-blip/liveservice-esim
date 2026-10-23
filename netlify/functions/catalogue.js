@@ -15,10 +15,19 @@ exports.handler = async (event) => {
   }
 
   const key = process.env.ESIM_GO_API_KEY?.trim();
+  const profit = Number(
+    process.env.PROFIT_PERCENT?.trim() || "5"
+  );
 
   if (!key) {
     return reply(500, {
       error: "مفتاح eSIM Go غير متاح"
+    });
+  }
+
+  if (!Number.isFinite(profit) || profit < 0) {
+    return reply(500, {
+      error: "نسبة الربح غير صحيحة"
     });
   }
 
@@ -59,6 +68,7 @@ exports.handler = async (event) => {
 
       if (items.length === 0) {
         return reply(200, {
+          currency: "SAR",
           bundles: [...bundles.values()]
         });
       }
@@ -71,6 +81,22 @@ exports.handler = async (event) => {
         }
 
         if (!bundles.has(item.name)) {
+          const cost = Number(item.price);
+
+          if (
+            item.price === null ||
+            item.price === undefined ||
+            item.price === "" ||
+            !Number.isFinite(cost) ||
+            cost < 0
+          ) {
+            throw new Error("Invalid price");
+          }
+
+          const salePrice = Number(
+            (cost * (1 + profit / 100)).toFixed(2)
+          );
+
           added++;
           bundles.set(item.name, {
             name: item.name,
@@ -79,7 +105,9 @@ exports.handler = async (event) => {
             dataAmount: item.dataAmount,
             duration: item.duration,
             durationUnit: item.durationUnit || "day",
-            unlimited: item.unlimited
+            unlimited: item.unlimited,
+            salePrice,
+            currency: "SAR"
           });
         }
       }
