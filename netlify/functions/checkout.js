@@ -31,12 +31,21 @@ exports.handler = async (event) => {
   }
 
   if (
+    !input ||
     typeof input.bundleName !== "string" ||
     !input.bundleName.trim() ||
     input.bundleName.length > 250
   ) {
     return reply(400, {
       error: "اختر الباقة أولًا"
+    });
+  }
+
+  const key = process.env.MYFATOORAH_API_KEY?.trim();
+
+  if (!key) {
+    return reply(500, {
+      error: "مفتاح ماي فاتورة غير متاح"
     });
   }
 
@@ -73,13 +82,64 @@ exports.handler = async (event) => {
       });
     }
 
+    const paymentResponse = await fetch(
+      "https://api-sa.myfatoorah.com/v2/InitiatePayment",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({
+          InvoiceAmount: bundle.salePrice,
+          CurrencyIso: "SAR"
+        }),
+        signal: AbortSignal.timeout(15000)
+      }
+    );
+
+    const payment = await paymentResponse.json();
+
+    if (
+      !paymentResponse.ok ||
+      payment.IsSuccess !== true ||
+      !Array.isArray(payment.Data?.PaymentMethods)
+    ) {
+      return reply(502, {
+        error: "تعذر تحميل وسائل الدفع لهذه الباقة"
+      });
+    }
+
+    const methods = payment.Data.PaymentMethods
+      .filter(item =>
+        item.IsDirectPayment === false &&
+        Number.isInteger(item.PaymentMethodId) &&
+        item.CurrencyIso === "SAR" &&
+        Number.isFinite(item.TotalAmount) &&
+        item.TotalAmount > 0
+      )
+      .map(item => ({
+        id: item.PaymentMethodId,
+        name: item.PaymentMethodAr || item.PaymentMethodEn,
+        totalAmount: item.TotalAmount,
+        currency: item.CurrencyIso
+      }));
+
+    if (!methods.length) {
+      return reply(502, {
+        error: "لا توجد وسائل دفع متاحة لهذا المبلغ"
+      });
+    }
+
     return reply(200, {
       bundleName: bundle.name,
       description: bundle.description,
       amount: bundle.salePrice,
       currency: "SAR",
+      methods,
       paymentEnabled: false,
-      message: "تم التحقق من السعر؛ ربط الدفع قيد الإعداد"
+      message: "تم تأكيد السعر وتحميل وسائل الدفع"
     });
   } catch {
     return reply(502, {
