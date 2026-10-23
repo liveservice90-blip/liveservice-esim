@@ -137,7 +137,60 @@ price.textContent =
     ? `السعر: ${bundle.salePrice.toFixed(2)} ريال سعودي`
     : "السعر غير متاح حاليًا";
 
-card.append(title, details, price);
+const choose = document.createElement("button");
+choose.type = "button";
+choose.textContent = "اختيار الباقة";
+
+const status = document.createElement("p");
+status.setAttribute("aria-live", "polite");
+
+choose.onclick = async () => {
+  choose.disabled = true;
+  status.textContent = "جارٍ التحقق من السعر…";
+
+  try {
+    const response = await fetch(
+      "/.netlify/functions/checkout",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          bundleName: bundle.name
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "تعذر التحقق من السعر"
+      );
+    }
+
+    if (
+      data.currency !== "SAR" ||
+      typeof data.amount !== "number" ||
+      !Number.isFinite(data.amount) ||
+      data.amount <= 0
+    ) {
+      throw new Error("السعر غير متاح حاليًا");
+    }
+
+    status.textContent =
+      `السعر المؤكد: ${data.amount.toFixed(2)} ريال سعودي. ` +
+      "الدفع غير مفعّل بعد.";
+  } catch (error) {
+    status.textContent =
+      error.message || "تعذر الاتصال، حاول مجددًا";
+  } finally {
+    choose.disabled = false;
+  }
+};
+
+card.append(title, details, price, choose, status);
         result.append(card);
       });
 
