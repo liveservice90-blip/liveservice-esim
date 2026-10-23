@@ -39,9 +39,14 @@ exports.handler = async (event) => {
     return reply(200, {
       message: "تم التحقق من حفظ البيانات وقراءتها بنجاح"
     });
-  } catch {
-    return reply(500, {
-      error: "تعذر التحقق من التخزين"
+} catch (error) {
+  return reply(500, {
+    error: "تعذر التحقق من التخزين",
+    type: error.name,
+    code: error.code || "UNKNOWN"
+  });
+
+  
     });
   } finally {
     if (store && key) {
