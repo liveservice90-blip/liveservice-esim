@@ -127,7 +127,17 @@
           `${allowance} — المدة: ${bundle.duration} ` +
           `${bundle.durationUnit === "day" ? "يوم" : bundle.durationUnit || ""}`;
 
-        card.append(title, details);
+        const price = document.createElement("p");
+price.style.cssText =
+  "color:#087f85;font-size:22px;font-weight:bold";
+
+price.textContent =
+  typeof bundle.salePrice === "number" &&
+  Number.isFinite(bundle.salePrice)
+    ? `السعر: ${bundle.salePrice.toFixed(2)} ريال سعودي`
+    : "السعر غير متاح حاليًا";
+
+card.append(title, details, price);
         result.append(card);
       });
 
