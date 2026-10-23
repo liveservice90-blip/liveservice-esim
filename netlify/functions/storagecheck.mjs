@@ -1,158 +1,81 @@
-exports.handler = async (event) => {
-  const reply = (statusCode, data) => ({
-    statusCode,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": statusCode === 200
-        ? "public, max-age=0, s-maxage=3600"
-        : "no-store"
-    },
-    body: JSON.stringify(data)
-  });
+import { getStore } from "@netlify/blobs";
+import { randomUUID } from "node:crypto";
 
-  if (event.httpMethod !== "GET") {
-    return reply(405, {
-      error: "استخدم GET لعرض الباقات"
+export default async (request) => {
+  const reply = (status, data) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store"
+      }
     });
+
+  if (request.method !== "GET") {
+    return reply(405, { error: "GET only" });
   }
 
-  const key = process.env.ESIM_GO_API_KEY?.trim();
-
-  const profit = Number(
-    process.env.PROFIT_PERCENT?.trim() || "5"
-  );
-
-  const usdToSar = Number(
-    process.env.USD_TO_SAR?.trim() || "3.75"
-  );
-
-  if (!key) {
-    return reply(500, {
-      error: "مفتاح eSIM Go غير متاح"
-    });
-  }
-
-  if (!Number.isFinite(profit) || profit < 0) {
-    return reply(500, {
-      error: "نسبة الربح غير صحيحة"
-    });
-  }
-
-  if (!Number.isFinite(usdToSar) || usdToSar <= 0) {
-    return reply(500, {
-      error: "معامل تحويل الدولار إلى الريال غير صحيح"
-    });
-  }
+  let store;
+  let key;
 
   try {
-    const bundles = new Map();
-    const signal = AbortSignal.timeout(25000);
+    store = getStore({
+      name: "liveservice-storage-checks"
+    });
 
-    for (let page = 1; page <= 100; page++) {
-      const url = new URL(
-        "https://api.esim-go.com/v2.5/catalogue"
-      );
+    key = `atomic-check:${randomUUID()}`;
 
-      url.searchParams.set("page", String(page));
-      url.searchParams.set("perPage", "500");
-
-      const response = await fetch(url, {
-        headers: {
-          "X-API-Key": key,
-          Accept: "application/json"
-        },
-        signal
-      });
-
-      if (!response.ok) {
-        return reply(502, {
-          error: "تعذر تحميل الباقات",
-          upstreamStatus: response.status
-        });
-      }
-
-      const data = await response.json();
-
-      const items = Array.isArray(data)
-        ? data
-        : data.bundles;
-
-      if (!Array.isArray(items)) {
-        throw new Error("Unexpected response");
-      }
-
-      if (items.length === 0) {
-        return reply(200, {
-          currency: "SAR",
-          bundles: [...bundles.values()]
-        });
-      }
-
-      let added = 0;
-
-      for (const item of items) {
-        if (
-          typeof item.name !== "string" ||
-          !item.name.trim()
-        ) {
-          throw new Error("Missing bundle name");
-        }
-
-        if (bundles.has(item.name)) {
-          continue;
-        }
-
-        const rawPrice = item.price;
-        const costUsd = Number(rawPrice);
-
-        if (
-          rawPrice === null ||
-          rawPrice === undefined ||
-          String(rawPrice).trim() === "" ||
-          !Number.isFinite(costUsd) ||
-          costUsd < 0
-        ) {
-          throw new Error("Invalid price");
-        }
-
-        // تحويل التكلفة من الدولار إلى الريال.
-        const costSar = costUsd * usdToSar;
-
-        // إضافة نسبة الربح ثم التقريب إلى هللتين.
-        const salePrice = Number(
-          (costSar * (1 + profit / 100)).toFixed(2)
+    // محاولتان متزامنتان لحجز المفتاح نفسه.
+    const attempts = await Promise.all(
+      ["first", "second"].map(async (owner) => {
+        const result = await store.setJSON(
+          key,
+          { owner },
+          { onlyIfNew: true }
         );
 
-        if (!Number.isFinite(salePrice)) {
-          throw new Error("Invalid sale price");
+        if (typeof result?.modified !== "boolean") {
+          throw new Error("Unexpected write result");
         }
 
-        bundles.set(item.name, {
-          name: item.name,
-          description: item.description,
-          countries: Array.isArray(item.countries)
-            ? item.countries
-            : [],
-          dataAmount: item.dataAmount,
-          duration: item.duration,
-          durationUnit: item.durationUnit || "day",
-          unlimited: item.unlimited,
-          salePrice,
-          currency: "SAR"
-        });
+        return {
+          owner,
+          modified: result.modified
+        };
+      })
+    );
 
-        added++;
-      }
+    const winners = attempts.filter(
+      item => item.modified === true
+    );
 
-      if (added === 0) {
-        throw new Error("Pagination did not advance");
-      }
+    if (winners.length !== 1) {
+      throw new Error("Atomic write check failed");
     }
 
-    throw new Error("Catalogue limit reached");
-  } catch {
-    return reply(502, {
-      error: "لم يكتمل تحميل الباقات، حاول لاحقًا"
+    const saved = await store.get(key, {
+      type: "json"
     });
+
+    if (saved?.owner !== winners[0].owner) {
+      throw new Error("Read verification failed");
+    }
+
+    return reply(200, {
+      success: true,
+      message: "نجح اختبار التخزين ومنع الكتابة المتكررة",
+      attempts: attempts.length,
+      successfulWrites: winners.length
+    });
+  } catch (error) {
+    return reply(500, {
+      success: false,
+      error: "تعذر اجتياز اختبار منع الكتابة المتكررة",
+      type: error?.name || "Error"
+    });
+  } finally {
+    if (store && key) {
+      await store.delete(key).catch(() => {});
+    }
   }
 };
