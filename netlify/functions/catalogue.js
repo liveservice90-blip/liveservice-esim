@@ -3,7 +3,9 @@ exports.handler = async (event) => {
     statusCode,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
+      "Cache-Control": statusCode === 200
+        ? "public, max-age=0, s-maxage=3600"
+        : "no-store"
     },
     body: JSON.stringify(data)
   });
@@ -12,38 +14,85 @@ exports.handler = async (event) => {
     return reply(405, { error: "GET only" });
   }
 
-  const key = process.env.ESIM_GO_API_KEY;
+  const key = process.env.ESIM_GO_API_KEY?.trim();
 
   if (!key) {
     return reply(500, {
-      error: "مفتاح eSIM Go غير متاح للدالة"
+      error: "مفتاح eSIM Go غير متاح"
     });
   }
 
   try {
-    const response = await fetch(
-      "https://api.esim-go.com/v2.5/catalogue",
-      {
+    const bundles = new Map();
+    const signal = AbortSignal.timeout(25000);
+
+    for (let page = 1; page <= 100; page++) {
+      const url = new URL(
+        "https://api.esim-go.com/v2.5/catalogue"
+      );
+      url.searchParams.set("page", page);
+      url.searchParams.set("perPage", 500);
+
+      const response = await fetch(url, {
         headers: {
           "X-API-Key": key,
           "Accept": "application/json"
         },
-        signal: AbortSignal.timeout(15000)
-      }
-    );
-
-    if (!response.ok) {
-      return reply(502, {
-        error: "تعذر جلب الباقات من eSIM Go",
-        upstreamStatus: response.status
+        signal
       });
+
+      if (!response.ok) {
+        return reply(502, {
+          error: "تعذر تحميل الباقات",
+          upstreamStatus: response.status
+        });
+      }
+
+      const data = await response.json();
+      const items = Array.isArray(data)
+        ? data
+        : data.bundles;
+
+      if (!Array.isArray(items)) {
+        throw new Error("Unexpected response");
+      }
+
+      if (items.length === 0) {
+        return reply(200, {
+          bundles: [...bundles.values()]
+        });
+      }
+
+      let added = 0;
+
+      for (const item of items) {
+        if (!item.name) {
+          throw new Error("Missing bundle name");
+        }
+
+        if (!bundles.has(item.name)) {
+          added++;
+          bundles.set(item.name, {
+            name: item.name,
+            description: item.description,
+            countries: item.countries || [],
+            dataAmount: item.dataAmount,
+            duration: item.duration,
+            durationUnit: item.durationUnit || "day",
+            unlimited: item.unlimited
+          });
+        }
+      }
+
+      if (added === 0) {
+        throw new Error("Pagination did not advance");
+      }
     }
 
-    const data = await response.json();
-    return reply(200, data);
+    throw new Error("Catalogue limit reached");
   } catch {
     return reply(502, {
-      error: "تعذر الاتصال بخدمة الباقات"
+      error: "لم يكتمل تحميل الباقات، حاول لاحقًا"
     });
   }
 };
