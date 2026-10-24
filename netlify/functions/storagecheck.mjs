@@ -1,530 +1,67 @@
 import { getStore } from "@netlify/blobs";
-
-const escape = value =>
-  String(value ?? "").replace(
-    /[&<>"']/g,
-    char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[char]
-  );
-
-const headers = {
-  "Cache-Control": "no-store",
-  "Referrer-Policy": "no-referrer",
-  "X-Content-Type-Options": "nosniff",
-  "X-Robots-Tag": "noindex, nofollow",
-  "Content-Security-Policy":
-    "default-src 'none'; style-src 'unsafe-inline'; " +
-    "base-uri 'none'; frame-ancestors 'none'"
-};
-
-function page(status, message, extra = "") {
-  return new Response(
-    `<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport"
-    content="width=device-width,initial-scale=1">
-  <title>نتيجة الطلب | LiveService</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 24px 16px;
-      background: #f5f8f8;
-      color: #183b41;
-      font-family: Tahoma, Arial;
-    }
-
-    main {
-      max-width: 620px;
-      margin: 25px auto;
-      padding: 24px;
-      background: white;
-      border-radius: 18px;
-      line-height: 2;
-      overflow-wrap: anywhere;
-    }
-
-    a { color: #087f85; }
-
-    .button {
-      display: inline-block;
-      padding: 12px 20px;
-      background: #087f85;
-      color: white;
-      border-radius: 10px;
-      text-decoration: none;
-    }
-
-    code {
-      display: block;
-      direction: ltr;
-      text-align: left;
-      padding: 10px;
-      background: #f5f8f8;
-      overflow-wrap: anywhere;
-      user-select: all;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>LiveService eSIM</h1>
-    <p>${escape(message)}</p>
-    ${extra}
-    <p><a href="/">العودة إلى الموقع</a></p>
-  </main>
-</body>
-</html>`,
-    {
-      status,
-      headers: {
-        ...headers,
-        "Content-Type": "text/html; charset=utf-8"
-      }
-    }
-  );
-}
+import { randomUUID } from "node:crypto";
 
 export default async (request) => {
+  const reply = (status, data) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store"
+      }
+    });
+
   if (request.method !== "GET") {
-    return page(405, "طريقة الطلب غير مسموحة.");
-  }
-
-  const url = new URL(request.url);
-  const orderId = url.searchParams.get("order");
-  const paymentId = url.searchParams.get("paymentId");
-
-  const uuidPattern =
-    /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-
-  if (
-    !orderId ||
-    !uuidPattern.test(orderId) ||
-    !paymentId ||
-    paymentId.length > 250
-  ) {
-    return page(
-      400,
-      "بيانات التحقق من الدفع غير مكتملة."
-    );
-  }
-
-  const orderNote =
-    "<p>رقم طلبك:</p>" +
-    `<code>${escape(orderId)}</code>`;
-
-  const paymentKey =
-    process.env.MYFATOORAH_API_KEY?.trim();
-
-  const esimKey =
-    process.env.ESIM_GO_API_KEY?.trim();
-
-  if (!paymentKey) {
-    return page(
-      503,
-      "خدمة التحقق غير متاحة حاليًا.",
-      orderNote
-    );
+    return reply(405, {
+      error: "استخدم GET لاختبار التخزين"
+    });
   }
 
   try {
+    // مخزن منفصل عن الطلبات والمدفوعات.
     const store = getStore({
-      name: "liveservice-orders"
+      name: "liveservice-storage-test"
     });
 
-    const order = await store.get(
-      `order:${orderId}`,
-      { type: "json" }
-    );
+    const key = `check:${randomUUID()}`;
 
-    if (!order) {
-      return page(
-        404,
-        "لم يتم العثور على الطلب.",
-        orderNote
-      );
-    }
-
-    if (
-      order.orderId !== orderId ||
-      order.currency !== "SAR" ||
-      typeof order.amount !== "number" ||
-      !Number.isFinite(order.amount) ||
-      order.amount <= 0 ||
-      !Number.isSafeInteger(order.invoiceId) ||
-      typeof order.bundleName !== "string" ||
-      !order.bundleName
-    ) {
-      return page(
-        409,
-        "تعذر مطابقة بيانات الطلب. تواصل مع الدعم.",
-        orderNote
-      );
-    }
-
-    const paymentResponse = await fetch(
-      "https://api-sa.myfatoorah.com/v2/GetPaymentStatus",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${paymentKey}`,
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: JSON.stringify({
-          Key: paymentId,
-          KeyType: "PaymentId"
-        }),
-        signal: AbortSignal.timeout(15000)
-      }
-    );
-
-    const payment = await paymentResponse.json();
-
-    if (
-      !paymentResponse.ok ||
-      payment.IsSuccess !== true ||
-      !payment.Data
-    ) {
-      return page(
-        502,
-        "تعذر التحقق من الدفع. احتفظ بإيصال العملية وحاول لاحقًا.",
-        orderNote
-      );
-    }
-
-    const invoice = payment.Data;
-    const invoiceAmount = Number(invoice.InvoiceValue);
-
-    if (
-      String(invoice.InvoiceId) !==
-        String(order.invoiceId) ||
-      invoice.CustomerReference !== orderId ||
-      !Number.isFinite(invoiceAmount) ||
-      Math.abs(invoiceAmount - order.amount) > 0.001
-    ) {
-      return page(
-        409,
-        "تعذر مطابقة الفاتورة مع الطلب. تواصل مع الدعم.",
-        orderNote
-      );
-    }
-
-    if (invoice.InvoiceStatus !== "Paid") {
-      return page(
-        200,
-        "لم يتم تأكيد السداد. قد تكون العملية معلّقة أو غير مكتملة.",
-        orderNote
-      );
-    }
-
-    await store.setJSON(
-      `verified:${orderId}:${order.invoiceId}`,
-      {
-        orderId,
-        invoiceId: order.invoiceId,
-        amount: order.amount,
-        currency: "SAR",
-        paymentVerified: true,
-        verifiedAt: new Date().toISOString()
-      },
-      { onlyIfNew: true }
-    );
-
-    if (!esimKey) {
-      return page(
-        503,
-        "تم تأكيد السداد، وخدمة تسليم الشريحة غير متاحة حاليًا. لا تعِد الدفع.",
-        orderNote
-      );
-    }
-
-    const providerKey =
-      `provider:${orderId}:${order.invoiceId}`;
-
-    let provider = await store.get(
-      providerKey,
-      { type: "json" }
-    );
-
-    if (!provider) {
-      if (
-        process.env.ESIM_ISSUANCE_ENABLED !== "true"
-      ) {
-        return page(
-          503,
-          "تم تأكيد السداد. إصدار الشريحة غير مفعّل حاليًا؛ تواصل مع الدعم ولا تعِد الدفع.",
-          orderNote
-        );
-      }
-
-      // حجز دائم لمنع تكرار شراء الشريحة.
-      // لا يُحذف عند انقطاع الاتصال.
-      const claim = await store.setJSON(
-        `issuance:${orderId}:${order.invoiceId}`,
-        {
-          orderId,
-          invoiceId: order.invoiceId,
-          bundleName: order.bundleName,
-          startedAt: new Date().toISOString()
-        },
+    const results = await Promise.all([
+      store.setJSON(
+        key,
+        { attempt: 1 },
         { onlyIfNew: true }
-      );
-
-      if (claim?.modified !== true) {
-        return page(
-          202,
-          "تم تأكيد السداد وسبق بدء إصدار الشريحة. حدّث الصفحة بعد قليل؛ إذا استمرت الرسالة تواصل مع الدعم ولا تعِد الدفع.",
-          orderNote
-        );
-      }
-
-      const response = await fetch(
-        "https://api.esim-go.com/v2.5/orders",
-        {
-          method: "POST",
-          headers: {
-            "X-API-Key": esimKey,
-            "Content-Type": "application/json",
-            Accept: "application/json"
-          },
-          body: JSON.stringify({
-            type: "transaction",
-            assign: true,
-            order: [
-              {
-                type: "bundle",
-                quantity: 1,
-                item: order.bundleName,
-                allowReassign: false
-              }
-            ]
-          }),
-          signal: AbortSignal.timeout(25000)
-        }
-      );
-
-      const result = await response.json();
-
-      provider = {
-        ok: response.ok,
-        result,
-        receivedAt: new Date().toISOString()
-      };
-
-      await store.setJSON(
-        providerKey,
-        provider,
+      ),
+      store.setJSON(
+        key,
+        { attempt: 2 },
         { onlyIfNew: true }
-      );
-    }
+      )
+    ]);
 
-    const reference = provider.result?.orderReference;
+    const successfulWrites = results.filter(
+      result => result?.modified === true
+    ).length;
 
-    if (
-      provider.ok !== true ||
-      typeof reference !== "string" ||
-      !reference ||
-      reference.length > 250
-    ) {
-      return page(
-        502,
-        "تم تأكيد السداد لكن إصدار الشريحة يحتاج مراجعة الدعم. لا تعِد الدفع.",
-        orderNote
-      );
-    }
+    const saved = await store.get(key, {
+      type: "json"
+    });
 
-    const assignmentsUrl = new URL(
-      "https://api.esim-go.com/v2.5/esims/assignments"
-    );
+    const success =
+      successfulWrites === 1 &&
+      [1, 2].includes(saved?.attempt);
 
-    assignmentsUrl.searchParams.set(
-      "reference",
-      reference
-    );
-
-    if (url.searchParams.get("download") === "qr") {
-      const response = await fetch(
-        assignmentsUrl,
-        {
-          headers: {
-            "X-API-Key": esimKey,
-            Accept: "application/zip"
-          },
-          signal: AbortSignal.timeout(15000)
-        }
-      );
-
-      if (!response.ok) {
-        return page(
-          502,
-          "ملف QR غير جاهز حاليًا. عُد إلى الصفحة السابقة وحاول لاحقًا.",
-          orderNote
-        );
-      }
-
-      const bytes = new Uint8Array(
-        await response.arrayBuffer()
-      );
-
-      if (
-        bytes.length < 4 ||
-        bytes.length > 5_000_000 ||
-        bytes[0] !== 80 ||
-        bytes[1] !== 75
-      ) {
-        return page(
-          502,
-          "تعذر تحميل ملف QR الصحيح. حاول لاحقًا.",
-          orderNote
-        );
-      }
-
-      return new Response(bytes, {
-        headers: {
-          ...headers,
-          "Content-Type": "application/zip",
-          "Content-Disposition":
-            `attachment; filename="LiveService-${orderId}.zip"`
-        }
-      });
-    }
-
-    const response = await fetch(
-      assignmentsUrl,
-      {
-        headers: {
-          "X-API-Key": esimKey,
-          Accept: "application/json"
-        },
-        signal: AbortSignal.timeout(15000)
-      }
-    );
-
-    if (!response.ok) {
-      return page(
-        202,
-        "تم تأكيد السداد وإرسال طلب الشريحة. بيانات التثبيت لم تجهز بعد؛ حدّث الصفحة لاحقًا ولا تعِد الدفع.",
-        orderNote
-      );
-    }
-
-    const details = await response.json();
-
-    const sims = Array.isArray(details)
-      ? details
-      : [details];
-
-    const rawSim = sims.length === 1
-      ? sims[0]
-      : null;
-
-    // دعم اسم الحقل الفعلي rspUrl
-    // مع إبقاء التوافق مع smdpAddress.
-    const sim =
-      rawSim && typeof rawSim === "object"
-        ? {
-            ...rawSim,
-            smdpAddress:
-              typeof rawSim.smdpAddress === "string" &&
-              rawSim.smdpAddress.trim()
-                ? rawSim.smdpAddress.trim()
-                : typeof rawSim.rspUrl === "string"
-                  ? rawSim.rspUrl.trim()
-                  : ""
-          }
-        : null;
-
-    if (
-      !sim ||
-      typeof sim.iccid !== "string" ||
-      !sim.iccid ||
-      typeof sim.smdpAddress !== "string" ||
-      !sim.smdpAddress ||
-      typeof sim.matchingId !== "string" ||
-      !sim.matchingId
-    ) {
-      return page(
-        202,
-        "تم تأكيد السداد، وننتظر بيانات تثبيت الشريحة. إذا استمرت الرسالة تواصل مع الدعم ولا تعِد الدفع.",
-        orderNote
-      );
-    }
-
-    await store.setJSON(
-      `delivery:${orderId}:${order.invoiceId}`,
-      {
-        orderId,
-        reference,
-        iccid: sim.iccid,
-        preparedAt: new Date().toISOString()
-      },
-      { onlyIfNew: true }
-    );
-
-    const download =
-      "/.netlify/functions/paymentcallback?" +
-      new URLSearchParams({
-        order: orderId,
-        paymentId,
-        download: "qr"
-      }).toString();
-
-    return page(
-      200,
-      "تم تأكيد سداد طلبك، وبيانات تثبيت شريحتك جاهزة.",
-      `
-        ${orderNote}
-
-        <p>
-          الباقة:
-          ${escape(order.description || order.bundleName)}
-        </p>
-
-        <p>رقم الشريحة ICCID:</p>
-        <code>${escape(sim.iccid)}</code>
-
-        <p>
-          <a class="button" href="${escape(download)}">
-            تحميل ملف QR
-          </a>
-        </p>
-
-        <p>
-          افتح الملف المضغوط للوصول إلى صورة QR.
-          وللتثبيت اليدوي استخدم البيانات التالية
-          في إعدادات إضافة eSIM:
-        </p>
-
-        <p>عنوان SM-DP+:</p>
-        <code>${escape(sim.smdpAddress)}</code>
-
-        <p>رمز التفعيل:</p>
-        <code>${escape(sim.matchingId)}</code>
-
-        <p>
-          احفظ رابط هذه الصفحة وبيانات الشريحة
-          في مكان خاص، ولا تشاركها مع الآخرين.
-          لم تُرسل رسالة بريد إلكتروني تلقائية.
-        </p>
-
-        <p>
-          للدعم:
-          info@liveservice-sa.com
-        </p>
-      `
-    );
+    return reply(success ? 200 : 500, {
+      success,
+      message: success
+        ? "نجح اختبار التخزين ومنع الكتابة المتكررة"
+        : "لم ينجح اختبار التخزين",
+      attempts: 2,
+      successfulWrites
+    });
   } catch {
-    return page(
-      502,
-      "تعذر إكمال الطلب حاليًا. إن تم الخصم فلا تعِد الدفع؛ احتفظ بإيصالك ورقم الطلب وتواصل مع الدعم.",
-      orderNote
-    );
+    return reply(500, {
+      success: false,
+      error: "تعذر إجراء اختبار التخزين"
+    });
   }
 };
