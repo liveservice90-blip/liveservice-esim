@@ -3,14 +3,13 @@ import { getStore } from "@netlify/blobs";
 const escape = value =>
   String(value ?? "").replace(
     /[&<>"']/g,
-    char =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[char]
+    char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]
   );
 
 const headers = {
@@ -40,7 +39,6 @@ function page(status, message, extra = "") {
       color: #183b41;
       font-family: Tahoma, Arial;
     }
-
     main {
       max-width: 620px;
       margin: 25px auto;
@@ -50,11 +48,7 @@ function page(status, message, extra = "") {
       line-height: 2;
       overflow-wrap: anywhere;
     }
-
-    a {
-      color: #087f85;
-    }
-
+    a { color: #087f85; }
     .button {
       display: inline-block;
       padding: 12px 20px;
@@ -63,13 +57,14 @@ function page(status, message, extra = "") {
       border-radius: 10px;
       text-decoration: none;
     }
-
-    code {
+    code, pre {
       display: block;
       direction: ltr;
       text-align: left;
       padding: 10px;
       background: #f5f8f8;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
       user-select: all;
     }
   </style>
@@ -91,6 +86,36 @@ function page(status, message, extra = "") {
       }
     }
   );
+}
+
+// فحص مؤقت يعرض أسماء الحقول وأنواعها فقط.
+function shape(value, depth = 0) {
+  if (value === null) return "null";
+
+  if (Array.isArray(value)) {
+    return {
+      type: "array",
+      count: value.length,
+      first: depth < 3 && value.length
+        ? shape(value[0], depth + 1)
+        : null
+    };
+  }
+
+  if (typeof value === "object") {
+    if (depth >= 3) return "object";
+
+    return Object.fromEntries(
+      Object.entries(value)
+        .slice(0, 20)
+        .map(([key, item]) => [
+          key,
+          shape(item, depth + 1)
+        ])
+    );
+  }
+
+  return typeof value;
 }
 
 export default async (request) => {
@@ -118,7 +143,7 @@ export default async (request) => {
   }
 
   const orderNote =
-    `<p>رقم طلبك:</p>` +
+    "<p>رقم طلبك:</p>" +
     `<code>${escape(orderId)}</code>`;
 
   const paymentKey =
@@ -321,7 +346,6 @@ export default async (request) => {
         receivedAt: new Date().toISOString()
       };
 
-      // حفظ استجابة المزود قبل جلب بيانات التثبيت.
       await store.setJSON(
         providerKey,
         provider,
@@ -353,7 +377,7 @@ export default async (request) => {
       reference
     );
 
-    // تنزيل ملف QR بعد إعادة التحقق من السداد.
+    // تنزيل QR للطلب نفسه بعد التحقق من السداد.
     if (url.searchParams.get("download") === "qr") {
       const response = await fetch(
         assignmentsUrl,
@@ -422,86 +446,15 @@ export default async (request) => {
 
     const details = await response.json();
 
-    const sims = Array.isArray(details)
-      ? details
-      : [details];
-
-    const sim = sims.length === 1
-      ? sims[0]
-      : null;
-
-    if (
-      !sim ||
-      typeof sim.iccid !== "string" ||
-      typeof sim.smdpAddress !== "string" ||
-      !sim.smdpAddress ||
-      typeof sim.matchingId !== "string" ||
-      !sim.matchingId
-    ) {
-      return page(
-        202,
-        "تم تأكيد السداد، وننتظر بيانات تثبيت الشريحة. حدّث الصفحة لاحقًا؛ إذا استمرت الرسالة تواصل مع الدعم.",
-        orderNote
-      );
-    }
-
-    await store.setJSON(
-      `delivery:${orderId}:${order.invoiceId}`,
-      {
-        orderId,
-        reference,
-        iccid: sim.iccid,
-        preparedAt: new Date().toISOString()
-      },
-      { onlyIfNew: true }
-    );
-
-    const download =
-      "/.netlify/functions/paymentcallback?" +
-      new URLSearchParams({
-        order: orderId,
-        paymentId,
-        download: "qr"
-      }).toString();
-
+    // الإضافة المؤقتة للفحص.
+    // لا تعرض أي قيمة من بيانات التفعيل.
     return page(
       200,
-      "تم تأكيد سداد طلبك، وبيانات تثبيت شريحتك جاهزة.",
-      `
-        ${orderNote}
-
-        <p>
-          الباقة:
-          ${escape(order.description || order.bundleName)}
-        </p>
-
-        <p>رقم الشريحة ICCID:</p>
-        <code>${escape(sim.iccid)}</code>
-
-        <p>
-          <a class="button" href="${escape(download)}">
-            تحميل ملف QR
-          </a>
-        </p>
-
-        <p>
-          افتح الملف المضغوط للوصول إلى صورة QR.
-          وللتثبيت اليدوي استخدم البيانات التالية
-          في إعدادات إضافة eSIM:
-        </p>
-
-        <p>عنوان SM-DP+:</p>
-        <code>${escape(sim.smdpAddress)}</code>
-
-        <p>رمز التفعيل:</p>
-        <code>${escape(sim.matchingId)}</code>
-
-        <p>
-          احفظ رابط هذه الصفحة وبيانات الشريحة
-          في مكان خاص، ولا تشاركها مع الآخرين.
-          لم تُرسل رسالة بريد إلكتروني تلقائية.
-        </p>
-      `
+      "تم تأكيد السداد. فحص صيغة بيانات التثبيت:",
+      orderNote +
+        "<pre dir=\"ltr\">" +
+        escape(JSON.stringify(shape(details), null, 2)) +
+        "</pre>"
     );
   } catch {
     return page(
