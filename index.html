@@ -3,10 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
   <title>LiveService eSIM</title>
 
   <style>
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
 
     body {
       margin: 0;
@@ -44,13 +46,11 @@
       border-radius: 18px;
     }
 
-    .hero {
-      box-shadow: 0 8px 30px #1232;
-    }
-
+    .hero { box-shadow: 0 8px 30px #1232; }
     .panel { margin-top: 25px; }
 
     .btn {
+      display: inline-block;
       background: #087f85;
       color: white;
       border: 0;
@@ -58,14 +58,21 @@
       border-radius: 10px;
       cursor: pointer;
       font: inherit;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .btn.secondary {
+      background: #e8f1f1;
+      color: #183b41;
     }
 
     .btn:disabled {
       opacity: .6;
-      cursor: wait;
+      cursor: default;
     }
 
-    input {
+    input:not([type="checkbox"]) {
       display: block;
       padding: 14px;
       border: 1px solid #ccd;
@@ -73,6 +80,11 @@
       width: 100%;
       margin: 10px 0 18px;
       font: inherit;
+    }
+
+    input[type="email"] {
+      direction: ltr;
+      text-align: left;
     }
 
     .card {
@@ -105,8 +117,24 @@
     }
 
     .status {
-      margin-bottom: 0;
+      line-height: 1.9;
       overflow-wrap: anywhere;
+    }
+
+    .consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.9;
+      margin: 20px 0;
+    }
+
+    .consent input { margin-top: 8px; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     footer {
@@ -132,10 +160,9 @@
     <section class="hero">
       <h1>إنترنت السفر مع LiveService eSIM</h1>
       <p>
-        اختر وجهتك واستعرض باقات الإنترنت المتاحة،
-        وتحقق من السعر ووسائل الدفع.
+        اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال
+        إلى صفحة الدفع الآمنة لدى ماي فاتورة.
       </p>
-
       <button class="btn" id="browse" type="button">
         استعرض الباقات
       </button>
@@ -149,7 +176,7 @@
         <input
           id="country"
           list="countries"
-          placeholder="مثال: تركيا، السعودية، أوروبا"
+          placeholder="مثال: تركيا، السعودية"
           autocomplete="off"
           required
         >
@@ -165,9 +192,71 @@
       </div>
     </section>
 
+    <section class="panel" id="checkout-panel" hidden>
+      <h2>بيانات الطلب</h2>
+      <p id="selected-name"></p>
+      <p class="price" id="selected-price"></p>
+      <p class="muted" id="payment-methods"></p>
+
+      <form id="payment-form">
+        <label for="customer-name">الاسم الكامل</label>
+        <input
+          id="customer-name"
+          name="customerName"
+          autocomplete="name"
+          minlength="2"
+          maxlength="100"
+          required
+        >
+
+        <label for="customer-email">البريد الإلكتروني</label>
+        <input
+          id="customer-email"
+          name="customerEmail"
+          type="email"
+          autocomplete="email"
+          maxlength="254"
+          required
+        >
+
+        <label class="consent">
+          <input id="compatible" type="checkbox" required>
+          <span>
+            تأكدت أن جهازي يدعم eSIM وأنه غير مقفل
+            على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.
+          </span>
+        </label>
+
+        <div class="actions">
+          <button class="btn" id="pay" type="submit">
+            الانتقال للدفع
+          </button>
+          <button
+            class="btn secondary"
+            id="cancel"
+            type="button"
+          >
+            تغيير الباقة
+          </button>
+        </div>
+      </form>
+
+      <p class="status" id="payment-status" role="status"></p>
+      <a class="btn" id="continue-payment" hidden>
+        متابعة الفاتورة
+      </a>
+
+      <div class="notice">
+        تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها.
+        احتفظ بصفحة نتيجة الطلب ورقم الطلب.
+        إرسال بيانات الشريحة بالبريد غير متاح حاليًا.
+      </div>
+    </section>
+
     <div class="notice">
-      الشراء والدفع وإصدار الشرائح غير مفعّلة بعد.
-      يمكنك حاليًا استعراض الباقات والتحقق من السعر ووسائل الدفع.
+      لا تُدخل بيانات بطاقتك داخل هذه الصفحة.
+      تتم عملية الدفع عبر صفحة ماي فاتورة.
+      للاستفسار: info@liveservice-sa.com
     </div>
   </main>
 
@@ -177,24 +266,30 @@
 
   <script>
     (() => {
-      const country = document.getElementById("country");
-      const search = document.getElementById("search");
-      const form = document.getElementById("search-form");
-      const result = document.getElementById("result");
-      const list = document.getElementById("countries");
+      const get = id => document.getElementById(id);
+      const country = get("country");
+      const result = get("result");
+      const search = get("search");
+      const list = get("countries");
+      const panel = get("checkout-panel");
+      const pay = get("pay");
+      const cancel = get("cancel");
+      const paymentStatus = get("payment-status");
+      const continuePayment = get("continue-payment");
 
+      let bundles = [];
+      let loading = null;
+      let selected = null;
+      let busy = false;
+      let blocked = false;
+      let selectionVersion = 0;
       let names = null;
 
       try {
         names = new Intl.DisplayNames(["ar"], {
           type: "region"
         });
-      } catch {
-        names = null;
-      }
-
-      let bundles = [];
-      let loading = null;
+      } catch {}
 
       const normalize = value => String(value || "")
         .trim()
@@ -211,10 +306,36 @@
         }
       }
 
-      document.getElementById("browse").onclick = () => {
-        document.getElementById("plans").scrollIntoView({
-          behavior: "smooth"
-        });
+      function validAmount(value) {
+        return typeof value === "number" &&
+          Number.isFinite(value) &&
+          value > 0;
+      }
+
+      function trustedPaymentUrl(value) {
+        if (typeof value !== "string") {
+          throw new Error("رابط الدفع غير صحيح.");
+        }
+
+        const url = new URL(value);
+        const trusted =
+          url.hostname === "myfatoorah.com" ||
+          url.hostname.endsWith(".myfatoorah.com");
+
+        if (
+          url.protocol !== "https:" ||
+          !trusted ||
+          url.username ||
+          url.password
+        ) {
+          throw new Error("تعذر التحقق من رابط الدفع.");
+        }
+
+        return url.toString();
+      }
+
+      get("browse").onclick = () => {
+        get("plans").scrollIntoView({ behavior: "smooth" });
       };
 
       async function load() {
@@ -222,7 +343,6 @@
           "/.netlify/functions/catalogue",
           { cache: "no-store" }
         );
-
         const data = await response.json();
 
         if (!response.ok || !Array.isArray(data.bundles)) {
@@ -230,7 +350,6 @@
         }
 
         bundles = data.bundles;
-
         const countries = new Map();
 
         bundles.forEach(bundle => {
@@ -252,6 +371,74 @@
           });
       }
 
+      async function selectBundle(bundle, button, status) {
+        if (busy || blocked) {
+          status.textContent =
+            "تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر.";
+          return;
+        }
+
+        const version = ++selectionVersion;
+        selected = null;
+        panel.hidden = true;
+        button.disabled = true;
+        status.textContent = "جارٍ التحقق من السعر ووسائل الدفع…";
+
+        try {
+          const response = await fetch(
+            "/.netlify/functions/checkout",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ bundleName: bundle.name })
+            }
+          );
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "تعذر التحقق من السعر.");
+          }
+
+          if (
+            data.currency !== "SAR" ||
+            !validAmount(data.amount) ||
+            !Array.isArray(data.methods) ||
+            !data.methods.length
+          ) {
+            throw new Error("السعر أو وسائل الدفع غير متاحة حاليًا.");
+          }
+
+          if (version !== selectionVersion) return;
+
+          selected = {
+            name: bundle.name,
+            amount: data.amount
+          };
+
+          get("selected-name").textContent =
+            bundle.description || bundle.name;
+          get("selected-price").textContent =
+            `السعر المؤكد: ${data.amount.toFixed(2)} ريال سعودي`;
+          get("payment-methods").textContent =
+            "وسائل الدفع: " +
+            data.methods.map(method => method.name).join("، ");
+
+          paymentStatus.textContent = "";
+          continuePayment.hidden = true;
+          get("compatible").checked = false;
+          panel.hidden = false;
+          status.textContent = "أكمل بيانات الطلب أسفل الصفحة.";
+          panel.scrollIntoView({ behavior: "smooth" });
+        } catch (error) {
+          if (version === selectionVersion) {
+            status.textContent =
+              error.message || "تعذر الاتصال، حاول مجددًا.";
+          }
+        } finally {
+          button.disabled = false;
+        }
+      }
+
       function createCard(bundle) {
         const card = document.createElement("article");
         card.className = "card";
@@ -262,110 +449,50 @@
 
         const details = document.createElement("p");
         const amount = Number(bundle.dataAmount);
-
         const allowance = bundle.unlimited
           ? "بيانات غير محدودة"
           : Number.isFinite(amount) && amount > 0
             ? `${amount / 1000} جيجابايت`
             : "راجع تفاصيل الباقة";
 
-        const durationUnit = bundle.durationUnit === "day"
+        const unit = bundle.durationUnit === "day"
           ? "يوم"
           : bundle.durationUnit || "";
 
         details.textContent =
-          `${allowance} — المدة: ${bundle.duration ?? "غير محددة"} ${durationUnit}`;
+          `${allowance} — المدة: ${bundle.duration ?? "غير محددة"} ${unit}`;
 
-        const validPrice =
+        const available =
           bundle.currency === "SAR" &&
-          typeof bundle.salePrice === "number" &&
-          Number.isFinite(bundle.salePrice) &&
-          bundle.salePrice > 0;
+          validAmount(bundle.salePrice);
 
         const price = document.createElement("p");
         price.className = "price";
-        price.textContent = validPrice
+        price.textContent = available
           ? `السعر: ${bundle.salePrice.toFixed(2)} ريال سعودي`
           : "السعر غير متاح حاليًا";
 
-        const choose = document.createElement("button");
-        choose.type = "button";
-        choose.className = "btn";
-        choose.textContent = "اختيار الباقة";
-        choose.disabled = !validPrice;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn";
+        button.textContent = "اختيار الباقة";
+        button.disabled = !available;
 
         const status = document.createElement("p");
         status.className = "status";
         status.setAttribute("aria-live", "polite");
 
-        choose.onclick = async () => {
-          choose.disabled = true;
-          status.textContent = "جارٍ التحقق من السعر ووسائل الدفع…";
+        button.onclick = () =>
+          selectBundle(bundle, button, status);
 
-          try {
-            const response = await fetch(
-              "/.netlify/functions/checkout",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  bundleName: bundle.name
-                })
-              }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              throw new Error(
-                data.error || "تعذر التحقق من السعر"
-              );
-            }
-
-            if (
-              data.currency !== "SAR" ||
-              typeof data.amount !== "number" ||
-              !Number.isFinite(data.amount) ||
-              data.amount <= 0
-            ) {
-              throw new Error("السعر غير متاح حاليًا");
-            }
-
-            if (
-              !Array.isArray(data.methods) ||
-              !data.methods.length
-            ) {
-              throw new Error("وسائل الدفع غير متاحة حاليًا");
-            }
-
-            status.textContent =
-              `السعر المؤكد: ${data.amount.toFixed(2)} ريال سعودي. ` +
-              "وسائل الدفع المتاحة: " +
-              data.methods.map(method => method.name).join("، ") +
-              ". الشراء والدفع غير مفعّلين بعد.";
-          } catch (error) {
-            status.textContent =
-              error.message || "تعذر الاتصال، حاول مجددًا";
-          } finally {
-            choose.disabled = false;
-          }
-        };
-
-        card.append(title, details, price, choose, status);
+        card.append(title, details, price, button, status);
         return card;
       }
 
-      form.addEventListener("submit", async event => {
+      get("search-form").addEventListener("submit", async event => {
         event.preventDefault();
-
         const query = normalize(country.value);
-
-        if (!query) {
-          result.textContent = "اكتب اسم الدولة أولًا.";
-          return;
-        }
+        if (!query) return;
 
         search.disabled = true;
         result.textContent = "جارٍ تحميل الباقات…";
@@ -377,7 +504,6 @@
               throw error;
             });
           }
-
           await loading;
 
           const matches = bundles.filter(bundle =>
@@ -392,22 +518,131 @@
 
           if (!matches.length) {
             result.textContent =
-              "لا توجد نتائج ضمن الباقات المحمّلة. جرّب اسم الدولة بالإنجليزية.";
+              "لا توجد نتائج. جرّب اسم الدولة بالإنجليزية.";
             return;
           }
 
           const count = document.createElement("p");
           count.textContent = `عدد الباقات: ${matches.length}`;
           result.append(count);
-
-          matches.forEach(bundle => {
-            result.append(createCard(bundle));
-          });
+          matches.forEach(bundle => result.append(createCard(bundle)));
         } catch {
           result.textContent =
             "تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا.";
         } finally {
           search.disabled = false;
+        }
+      });
+
+      cancel.onclick = () => {
+        if (busy || blocked) return;
+        selectionVersion++;
+        selected = null;
+        panel.hidden = true;
+        get("plans").scrollIntoView({ behavior: "smooth" });
+      };
+
+      get("payment-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (!selected || busy || blocked) return;
+        if (!get("payment-form").reportValidity()) return;
+
+        const customerName = get("customer-name").value.trim();
+        const customerEmail = get("customer-email").value.trim();
+
+        if (
+          customerName.length < 2 ||
+          /[\u0000-\u001f\u007f]/.test(customerName)
+        ) {
+          paymentStatus.textContent = "أدخل الاسم بشكل صحيح.";
+          return;
+        }
+
+        busy = true;
+        pay.disabled = true;
+        cancel.disabled = true;
+        paymentStatus.textContent =
+          "جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…";
+
+        try {
+          const response = await fetch(
+            "/.netlify/functions/createpayment",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                bundleName: selected.name,
+                customerName,
+                customerEmail
+              })
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            // هذه الحالات يرفضها الخادم قبل إنشاء الفاتورة.
+            if ([400, 404, 405, 413, 503].includes(response.status)) {
+              paymentStatus.textContent =
+                data.error || "تعذر تجهيز الدفع حاليًا.";
+              return;
+            }
+
+            throw new Error("تعذر تأكيد نتيجة إنشاء الفاتورة.");
+          }
+
+          if (
+            typeof data.orderId !== "string" ||
+            !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+              .test(data.orderId) ||
+            data.currency !== "SAR" ||
+            !validAmount(data.amount)
+          ) {
+            throw new Error("بيانات الفاتورة غير مكتملة.");
+          }
+
+          const paymentUrl = trustedPaymentUrl(data.paymentUrl);
+          blocked = true;
+
+          continuePayment.href = paymentUrl;
+          continuePayment.hidden = false;
+
+          // رقم الطلب للمراجعة مع الدعم، وليس رابطًا لاسترجاع الشريحة.
+          try {
+            localStorage.setItem("liveservice-last-order", JSON.stringify({
+              orderId: data.orderId,
+              amount: data.amount,
+              currency: data.currency,
+              createdAt: new Date().toISOString()
+            }));
+          } catch {}
+
+          if (Math.abs(data.amount - selected.amount) > 0.001) {
+            get("selected-price").textContent =
+              `قيمة الفاتورة: ${data.amount.toFixed(2)} ريال سعودي`;
+
+            paymentStatus.textContent =
+              "تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، " +
+              "ثم اضغط متابعة الفاتورة إذا وافقت. " +
+              `رقم الطلب: ${data.orderId}`;
+            return;
+          }
+
+          paymentStatus.textContent =
+            `رقم الطلب: ${data.orderId}. جارٍ الانتقال للدفع…`;
+
+          window.location.assign(paymentUrl);
+        } catch {
+          blocked = true;
+          paymentStatus.textContent =
+            "تعذر تأكيد نتيجة إنشاء الفاتورة. " +
+            "تواصل مع الدعم على info@liveservice-sa.com " +
+            "قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة.";
+        } finally {
+          busy = false;
+          pay.disabled = blocked;
+          cancel.disabled = blocked;
         }
       });
     })();
