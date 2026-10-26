@@ -503,7 +503,23 @@
         button.onclick = () =>
           selectBundle(bundle, button, status);
 
-        card.append(title, details, price, button, status);
+        const planIdentity = String(bundle.name || "") + " " + String(bundle.description || "");
+        const planType = /(?:^|[^a-z])(?:esim_ule_|unlimited\s+essential)/i.test(planIdentity) ? "essential" :
+          /(?:^|[^a-z])(?:esim_ulp_|unlimited\s+plus)/i.test(planIdentity) ? "plus" : null;
+        if (bundle.unlimited === true && planType) {
+          const info = document.createElement("p");
+          info.className = "notice";
+          const descriptions = {
+            ar: { essential: "1 جيجابايت بسرعة كاملة لكل دورة يومية، ثم تستمر الخدمة بسرعة 1.25 ميجابت/ثانية. يختلف وقت التجدد حسب نوع الشريحة.", plus: "2 جيجابايت بسرعة كاملة لكل دورة يومية، ثم تستمر الخدمة بسرعة 2 ميجابت/ثانية. يختلف وقت التجدد حسب نوع الشريحة." },
+            en: { essential: "1 GB at full speed per daily cycle, then unlimited data at 1.25 Mbps. Reset time depends on the eSIM profile.", plus: "2 GB at full speed per daily cycle, then unlimited data at 2 Mbps. Reset time depends on the eSIM profile." },
+            tr: { essential: "Günlük dönemde 1 GB tam hız, ardından 1,25 Mbps hızında sınırsız veri. Yenilenme zamanı eSIM profiline bağlıdır.", plus: "Günlük dönemde 2 GB tam hız, ardından 2 Mbps hızında sınırsız veri. Yenilenme zamanı eSIM profiline bağlıdır." },
+            ur: { essential: "ہر روز 1 جی بی مکمل رفتار پر، پھر 1.25 Mbps پر لامحدود ڈیٹا۔ تجدید کا وقت eSIM پروفائل پر منحصر ہے۔", plus: "ہر روز 2 جی بی مکمل رفتار پر، پھر 2 Mbps پر لامحدود ڈیٹا۔ تجدید کا وقت eSIM پروفائل پر منحصر ہے۔" }
+          };
+          setText(info, () => descriptions[lang][planType]);
+          card.append(title, details, info, price, button, status);
+        } else {
+          card.append(title, details, price, button, status);
+        }
         return card;
       }
 
