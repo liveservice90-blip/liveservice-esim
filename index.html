@@ -147,59 +147,59 @@
       .hero, .panel { padding: 20px; }
       header { font-size: 14px; }
     }
-  </style>
+  #language { font: inherit; padding: 9px; border: 1px solid #ffffff80; border-radius: 9px; background: white; color: #183b41; max-width: 140px; } header { flex-wrap: wrap; }</style>
 </head>
 
 <body>
   <header>
     <strong>LiveService | خدمة مباشرة</strong>
     <span>eSIM</span>
-  </header>
+  <select id="language" aria-label="Language / اللغة / Dil"><option value="ar">العربية</option><option value="en">English</option><option value="tr">Türkçe</option></select></header>
 
   <main>
     <section class="hero">
-      <h1>إنترنت السفر مع LiveService eSIM</h1>
-      <p>
+      <h1 data-i18n="إنترنت السفر مع LiveService eSIM">إنترنت السفر مع LiveService eSIM</h1>
+      <p data-i18n="اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة لدى ماي فاتورة.">
         اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال
         إلى صفحة الدفع الآمنة لدى ماي فاتورة.
       </p>
-      <button class="btn" id="browse" type="button">
+      <button class="btn" id="browse" type="button" data-i18n="استعرض الباقات">
         استعرض الباقات
       </button>
     </section>
 
     <section class="panel" id="plans">
-      <h2>ابحث عن باقة</h2>
+      <h2 data-i18n="ابحث عن باقة">ابحث عن باقة</h2>
 
       <form id="search-form">
-        <label for="country">الوجهة</label>
+        <label for="country" data-i18n="الوجهة">الوجهة</label>
         <input
           id="country"
           list="countries"
-          placeholder="مثال: تركيا، السعودية"
+          placeholder="مثال: تركيا، السعودية" data-i18n-placeholder="مثال: تركيا، السعودية"
           autocomplete="off"
           required
         >
         <datalist id="countries"></datalist>
 
-        <button class="btn" id="search" type="submit">
+        <button class="btn" id="search" type="submit" data-i18n="بحث">
           بحث
         </button>
       </form>
 
       <div id="result" aria-live="polite">
-        <p class="muted">اكتب اسم الدولة ثم اضغط بحث.</p>
+        <p class="muted" data-i18n="اكتب اسم الدولة ثم اضغط بحث.">اكتب اسم الدولة ثم اضغط بحث.</p>
       </div>
     </section>
 
     <section class="panel" id="checkout-panel" hidden>
-      <h2>بيانات الطلب</h2>
+      <h2 data-i18n="بيانات الطلب">بيانات الطلب</h2>
       <p id="selected-name"></p>
       <p class="price" id="selected-price"></p>
       <p class="muted" id="payment-methods"></p>
 
       <form id="payment-form">
-        <label for="customer-name">الاسم الكامل</label>
+        <label for="customer-name" data-i18n="الاسم الكامل">الاسم الكامل</label>
         <input
           id="customer-name"
           name="customerName"
@@ -209,7 +209,7 @@
           required
         >
 
-        <label for="customer-email">البريد الإلكتروني</label>
+        <label for="customer-email" data-i18n="البريد الإلكتروني">البريد الإلكتروني</label>
         <input
           id="customer-email"
           name="customerEmail"
@@ -221,32 +221,32 @@
 
         <label class="consent">
           <input id="compatible" type="checkbox" required>
-          <span>
+          <span data-i18n="تأكدت أن جهازي يدعم eSIM وأنه غير مقفل على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.">
             تأكدت أن جهازي يدعم eSIM وأنه غير مقفل
             على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.
           </span>
         </label>
 
         <div class="actions">
-          <button class="btn" id="pay" type="submit">
+          <button class="btn" id="pay" type="submit" data-i18n="الانتقال للدفع">
             الانتقال للدفع
           </button>
           <button
             class="btn secondary"
             id="cancel"
             type="button"
-          >
+           data-i18n="تغيير الباقة">
             تغيير الباقة
           </button>
         </div>
       </form>
 
       <p class="status" id="payment-status" role="status"></p>
-      <a class="btn" id="continue-payment" hidden>
+      <a class="btn" id="continue-payment" hidden data-i18n="متابعة الفاتورة">
         متابعة الفاتورة
       </a>
 
-      <div class="notice">
+      <div class="notice" data-i18n="تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها. احتفظ بصفحة نتيجة الطلب ورقم الطلب. إرسال بيانات الشريحة بالبريد غير متاح حاليًا.">
         تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها.
         احتفظ بصفحة نتيجة الطلب ورقم الطلب.
         إرسال بيانات الشريحة بالبريد غير متاح حاليًا.
@@ -261,6 +261,35 @@
   <script>
     (() => {
       const get = id => document.getElementById(id);
+      const translations = {"إنترنت السفر مع LiveService eSIM": {"ar": "إنترنت السفر مع LiveService eSIM", "en": "Travel internet with LiveService eSIM", "tr": "LiveService eSIM ile seyahat interneti"}, "اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة لدى ماي فاتورة.": {"ar": "اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة لدى ماي فاتورة.", "en": "Choose your destination and plan, then enter your details to continue to MyFatoorah checkout.", "tr": "Gideceğiniz ülkeyi ve paketinizi seçin, ardından MyFatoorah ödeme sayfasına geçmek için bilgilerinizi girin."}, "استعرض الباقات": {"ar": "استعرض الباقات", "en": "Browse plans", "tr": "Paketleri görüntüle"}, "ابحث عن باقة": {"ar": "ابحث عن باقة", "en": "Find a plan", "tr": "Paket ara"}, "الوجهة": {"ar": "الوجهة", "en": "Destination", "tr": "Gidilecek ülke"}, "مثال: تركيا، السعودية": {"ar": "مثال: تركيا، السعودية", "en": "Example: Turkey, Saudi Arabia", "tr": "Örnek: Türkiye, Suudi Arabistan"}, "بحث": {"ar": "بحث", "en": "Search", "tr": "Ara"}, "اكتب اسم الدولة ثم اضغط بحث.": {"ar": "اكتب اسم الدولة ثم اضغط بحث.", "en": "Enter a country name, then select Search.", "tr": "Ülke adını girin ve Ara düğmesine basın."}, "بيانات الطلب": {"ar": "بيانات الطلب", "en": "Order details", "tr": "Sipariş bilgileri"}, "الاسم الكامل": {"ar": "الاسم الكامل", "en": "Full name", "tr": "Ad soyad"}, "البريد الإلكتروني": {"ar": "البريد الإلكتروني", "en": "Email address", "tr": "E-posta adresi"}, "تأكدت أن جهازي يدعم eSIM وأنه غير مقفل على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.": {"ar": "تأكدت أن جهازي يدعم eSIM وأنه غير مقفل على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.", "en": "I confirm that my device supports eSIM and is carrier-unlocked, and that the plan destination and duration suit my needs.", "tr": "Cihazımın eSIM desteklediğini, operatör kilidi olmadığını ve paketin ülkesinin ve süresinin bana uygun olduğunu onaylıyorum."}, "الانتقال للدفع": {"ar": "الانتقال للدفع", "en": "Continue to payment", "tr": "Ödemeye geç"}, "تغيير الباقة": {"ar": "تغيير الباقة", "en": "Change plan", "tr": "Paketi değiştir"}, "متابعة الفاتورة": {"ar": "متابعة الفاتورة", "en": "Continue to invoice", "tr": "Faturaya devam et"}, "تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها. احتفظ بصفحة نتيجة الطلب ورقم الطلب. إرسال بيانات الشريحة بالبريد غير متاح حاليًا.": {"ar": "تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها. احتفظ بصفحة نتيجة الطلب ورقم الطلب. إرسال بيانات الشريحة بالبريد غير متاح حاليًا.", "en": "Installation details appear after payment is confirmed and the eSIM is issued. Keep the order result page and order number. Email delivery of eSIM details is currently unavailable.", "tr": "Kurulum bilgileri, ödeme onaylandıktan ve eSIM oluşturulduktan sonra gösterilir. Sipariş sonuç sayfasını ve sipariş numarasını saklayın. eSIM bilgilerinin e-posta ile gönderilmesi şu anda kullanılamıyor."}, "رابط الدفع غير صحيح.": {"ar": "رابط الدفع غير صحيح.", "en": "Invalid payment link.", "tr": "Ödeme bağlantısı geçersiz."}, "تعذر التحقق من رابط الدفع.": {"ar": "تعذر التحقق من رابط الدفع.", "en": "Unable to verify the payment link.", "tr": "Ödeme bağlantısı doğrulanamadı."}, "تعذر تحميل الباقات": {"ar": "تعذر تحميل الباقات", "en": "Unable to load plans.", "tr": "Paketler yüklenemedi."}, "تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر.": {"ar": "تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر.", "en": "Continue your current order or contact support before creating another order.", "tr": "Yeni bir sipariş oluşturmadan önce mevcut siparişinize devam edin veya destekle iletişime geçin."}, "جارٍ التحقق من السعر ووسائل الدفع…": {"ar": "جارٍ التحقق من السعر ووسائل الدفع…", "en": "Checking price and payment methods…", "tr": "Fiyat ve ödeme yöntemleri kontrol ediliyor…"}, "تعذر التحقق من السعر.": {"ar": "تعذر التحقق من السعر.", "en": "Unable to verify the price.", "tr": "Fiyat doğrulanamadı."}, "السعر أو وسائل الدفع غير متاحة حاليًا.": {"ar": "السعر أو وسائل الدفع غير متاحة حاليًا.", "en": "Price or payment methods are currently unavailable.", "tr": "Fiyat veya ödeme yöntemleri şu anda kullanılamıyor."}, "وسائل الدفع: ": {"ar": "وسائل الدفع: ", "en": "Payment methods: ", "tr": "Ödeme yöntemleri: "}, "أكمل بيانات الطلب أسفل الصفحة.": {"ar": "أكمل بيانات الطلب أسفل الصفحة.", "en": "Complete your order details below.", "tr": "Aşağıdaki sipariş bilgilerini doldurun."}, "تعذر الاتصال، حاول مجددًا.": {"ar": "تعذر الاتصال، حاول مجددًا.", "en": "Connection failed. Please try again.", "tr": "Bağlantı kurulamadı. Lütfen tekrar deneyin."}, "بيانات غير محدودة": {"ar": "بيانات غير محدودة", "en": "Unlimited data", "tr": "Sınırsız veri"}, "راجع تفاصيل الباقة": {"ar": "راجع تفاصيل الباقة", "en": "See plan details", "tr": "Paket ayrıntılarına bakın"}, "يوم": {"ar": "يوم", "en": "days", "tr": "gün"}, "غير محددة": {"ar": "غير محددة", "en": "Not specified", "tr": "Belirtilmedi"}, "السعر غير متاح حاليًا": {"ar": "السعر غير متاح حاليًا", "en": "Price currently unavailable", "tr": "Fiyat şu anda kullanılamıyor"}, "اختيار الباقة": {"ar": "اختيار الباقة", "en": "Select plan", "tr": "Paketi seç"}, "جارٍ تحميل الباقات…": {"ar": "جارٍ تحميل الباقات…", "en": "Loading plans…", "tr": "Paketler yükleniyor…"}, "لا توجد نتائج. جرّب اسم الدولة بالإنجليزية.": {"ar": "لا توجد نتائج. جرّب اسم الدولة بالإنجليزية.", "en": "No results. Try the country name in English.", "tr": "Sonuç bulunamadı. Ülke adını İngilizce deneyin."}, "تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا.": {"ar": "تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا.", "en": "Unable to load plans. Select Search to retry.", "tr": "Paketler yüklenemedi. Tekrar denemek için Ara düğmesine basın."}, "أدخل الاسم بشكل صحيح.": {"ar": "أدخل الاسم بشكل صحيح.", "en": "Please enter a valid name.", "tr": "Lütfen geçerli bir ad girin."}, "جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…": {"ar": "جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…", "en": "Preparing your invoice. Please wait without clicking again…", "tr": "Faturanız hazırlanıyor. Tekrar tıklamadan bekleyin…"}, "تعذر تجهيز الدفع حاليًا.": {"ar": "تعذر تجهيز الدفع حاليًا.", "en": "Unable to prepare payment at this time.", "tr": "Ödeme şu anda hazırlanamadı."}, "تعذر تأكيد نتيجة إنشاء الفاتورة.": {"ar": "تعذر تأكيد نتيجة إنشاء الفاتورة.", "en": "Unable to confirm whether the invoice was created.", "tr": "Faturanın oluşturulup oluşturulmadığı doğrulanamadı."}, "بيانات الفاتورة غير مكتملة.": {"ar": "بيانات الفاتورة غير مكتملة.", "en": "Invoice details are incomplete.", "tr": "Fatura bilgileri eksik."}, "تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، ": {"ar": "تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، ", "en": "The price has changed since you selected the plan. Review the invoice amount, ", "tr": "Paketi seçtiğinizden beri fiyat değişti. Fatura tutarını kontrol edin, "}, "ثم اضغط متابعة الفاتورة إذا وافقت. ": {"ar": "ثم اضغط متابعة الفاتورة إذا وافقت. ", "en": "then select Continue to invoice if you agree. ", "tr": "kabul ediyorsanız Faturaya devam et düğmesine basın. "}, "تعذر تأكيد نتيجة إنشاء الفاتورة. ": {"ar": "تعذر تأكيد نتيجة إنشاء الفاتورة. ", "en": "Unable to confirm whether the invoice was created. ", "tr": "Faturanın oluşturulup oluşturulmadığı doğrulanamadı. "}, "تواصل مع الدعم على info@liveservice-sa.com ": {"ar": "تواصل مع الدعم على info@liveservice-sa.com ", "en": "Contact support at info@liveservice-sa.com ", "tr": "info@liveservice-sa.com adresinden destekle iletişime geçin. "}, "قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة.": {"ar": "قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة.", "en": "before retrying to avoid creating duplicate invoices.", "tr": "Birden fazla fatura oluşturmamak için tekrar denemeden önce destek alın."}, "السعر المؤكد: {amount} ريال سعودي": {"ar": "السعر المؤكد: {amount} ريال سعودي", "en": "Confirmed price: SAR {amount}", "tr": "Onaylanan fiyat: {amount} SAR"}, "{amount} جيجابايت": {"ar": "{amount} جيجابايت", "en": "{amount} GB", "tr": "{amount} GB"}, "{allowance} — المدة: {duration} {unit}": {"ar": "{allowance} — المدة: {duration} {unit}", "en": "{allowance} — Duration: {duration} {unit}", "tr": "{allowance} — Süre: {duration} {unit}"}, "السعر: {amount} ريال سعودي": {"ar": "السعر: {amount} ريال سعودي", "en": "Price: SAR {amount}", "tr": "Fiyat: {amount} SAR"}, "عدد الباقات: {count}": {"ar": "عدد الباقات: {count}", "en": "Plans: {count}", "tr": "Paket sayısı: {count}"}, "قيمة الفاتورة: {amount} ريال سعودي": {"ar": "قيمة الفاتورة: {amount} ريال سعودي", "en": "Invoice amount: SAR {amount}", "tr": "Fatura tutarı: {amount} SAR"}, "رقم الطلب: {id}": {"ar": "رقم الطلب: {id}", "en": "Order number: {id}", "tr": "Sipariş numarası: {id}"}, "رقم الطلب: {id}. جارٍ الانتقال للدفع…": {"ar": "رقم الطلب: {id}. جارٍ الانتقال للدفع…", "en": "Order number: {id}. Redirecting to payment…", "tr": "Sipariş numarası: {id}. Ödemeye yönlendiriliyorsunuz…"}};
+      let lang = "ar";
+      try { const saved = localStorage.getItem("liveservice-language"); if (["ar", "en", "tr"].includes(saved)) lang = saved; } catch {}
+      const textBindings = new Map();
+      function t(key, values = {}) {
+        return (translations[key]?.[lang] || key).replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ""));
+      }
+      function setText(element, getter) {
+        textBindings.set(element, getter);
+        element.textContent = getter();
+      }
+      function applyLanguage() {
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+        get("language").value = lang;
+        document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+        document.querySelectorAll("[data-i18n-placeholder]").forEach(el => el.placeholder = t(el.dataset.i18nPlaceholder));
+        for (const [el, getter] of textBindings) {
+          if (el.isConnected) el.textContent = getter();
+          else textBindings.delete(el);
+        }
+        populateCountries();
+      }
+      get("language").addEventListener("change", event => {
+        lang = event.target.value;
+        try { localStorage.setItem("liveservice-language", lang); } catch {}
+        applyLanguage();
+      });
+
       const country = get("country");
       const result = get("result");
       const search = get("search");
@@ -277,13 +306,10 @@
       let busy = false;
       let blocked = false;
       let selectionVersion = 0;
-      let names = null;
-
-      try {
-        names = new Intl.DisplayNames(["ar"], {
-          type: "region"
-        });
-      } catch {}
+      const regionNames = {};
+      for (const code of ["ar", "en", "tr"]) {
+        try { regionNames[code] = new Intl.DisplayNames([code], {type: "region"}); } catch {}
+      }
 
       const normalize = value => String(value || "")
         .trim()
@@ -294,7 +320,7 @@
 
       function arabicName(item) {
         try {
-          return names?.of(item.iso) || item.name || item.iso;
+          return regionNames[lang]?.of(item.iso) || item.name || item.iso;
         } catch {
           return item.name || item.iso;
         }
@@ -308,7 +334,7 @@
 
       function trustedPaymentUrl(value) {
         if (typeof value !== "string") {
-          throw new Error("رابط الدفع غير صحيح.");
+          throw new Error(t("رابط الدفع غير صحيح."));
         }
 
         const url = new URL(value);
@@ -322,7 +348,7 @@
           url.username ||
           url.password
         ) {
-          throw new Error("تعذر التحقق من رابط الدفع.");
+          throw new Error(t("تعذر التحقق من رابط الدفع."));
         }
 
         return url.toString();
@@ -340,10 +366,14 @@
         const data = await response.json();
 
         if (!response.ok || !Array.isArray(data.bundles)) {
-          throw new Error("تعذر تحميل الباقات");
+          throw new Error(t("تعذر تحميل الباقات"));
         }
 
         bundles = data.bundles;
+        populateCountries();
+      }
+
+      function populateCountries() {
         const countries = new Map();
 
         bundles.forEach(bundle => {
@@ -357,7 +387,7 @@
         list.replaceChildren();
 
         [...new Set(countries.values())]
-          .sort((a, b) => String(a).localeCompare(String(b), "ar"))
+          .sort((a, b) => String(a).localeCompare(String(b), lang))
           .forEach(name => {
             const option = document.createElement("option");
             option.value = name;
@@ -367,8 +397,7 @@
 
       async function selectBundle(bundle, button, status) {
         if (busy || blocked) {
-          status.textContent =
-            "تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر.";
+          setText(status, () => t("تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر."));
           return;
         }
 
@@ -376,7 +405,7 @@
         selected = null;
         panel.hidden = true;
         button.disabled = true;
-        status.textContent = "جارٍ التحقق من السعر ووسائل الدفع…";
+        setText(status, () => t("جارٍ التحقق من السعر ووسائل الدفع…"));
 
         try {
           const response = await fetch(
@@ -390,7 +419,7 @@
           const data = await response.json();
 
           if (!response.ok) {
-            throw new Error(data.error || "تعذر التحقق من السعر.");
+            throw new Error(t("تعذر التحقق من السعر."));
           }
 
           if (
@@ -399,7 +428,7 @@
             !Array.isArray(data.methods) ||
             !data.methods.length
           ) {
-            throw new Error("السعر أو وسائل الدفع غير متاحة حاليًا.");
+            throw new Error(t("السعر أو وسائل الدفع غير متاحة حاليًا."));
           }
 
           if (version !== selectionVersion) return;
@@ -409,24 +438,20 @@
             amount: data.amount
           };
 
-          get("selected-name").textContent =
-            bundle.description || bundle.name;
-          get("selected-price").textContent =
-            `السعر المؤكد: ${data.amount.toFixed(2)} ريال سعودي`;
-          get("payment-methods").textContent =
-            "وسائل الدفع: " +
-            data.methods.map(method => method.name).join("، ");
+          setText(get("selected-name"), () => bundle.description || bundle.name);
+          setText(get("selected-price"), () => t("السعر المؤكد: {amount} ريال سعودي", {amount: data.amount.toFixed(2)}));
+          setText(get("payment-methods"), () => t("وسائل الدفع: ") +
+            data.methods.map(method => method.name).join("، "));
 
-          paymentStatus.textContent = "";
+          setText(paymentStatus, () => "");
           continuePayment.hidden = true;
           get("compatible").checked = false;
           panel.hidden = false;
-          status.textContent = "أكمل بيانات الطلب أسفل الصفحة.";
+          setText(status, () => t("أكمل بيانات الطلب أسفل الصفحة."));
           panel.scrollIntoView({ behavior: "smooth" });
         } catch (error) {
           if (version === selectionVersion) {
-            status.textContent =
-              error.message || "تعذر الاتصال، حاول مجددًا.";
+            setText(status, () => error.message || t("تعذر الاتصال، حاول مجددًا."));
           }
         } finally {
           button.disabled = false;
@@ -439,22 +464,21 @@
 
         const title = document.createElement("strong");
         title.className = "card-title";
-        title.textContent = bundle.description || bundle.name;
+        setText(title, () => bundle.description || bundle.name);
 
         const details = document.createElement("p");
         const amount = Number(bundle.dataAmount);
-        const allowance = bundle.unlimited
-          ? "بيانات غير محدودة"
+        const allowance = () => bundle.unlimited
+          ? t("بيانات غير محدودة")
           : Number.isFinite(amount) && amount > 0
-            ? `${amount / 1000} جيجابايت`
-            : "راجع تفاصيل الباقة";
+            ? t("{amount} جيجابايت", {amount: amount / 1000})
+            : t("راجع تفاصيل الباقة");
 
-        const unit = bundle.durationUnit === "day"
-          ? "يوم"
+        const unit = () => bundle.durationUnit === "day"
+          ? t("يوم")
           : bundle.durationUnit || "";
 
-        details.textContent =
-          `${allowance} — المدة: ${bundle.duration ?? "غير محددة"} ${unit}`;
+        setText(details, () => t("{allowance} — المدة: {duration} {unit}", {allowance: allowance(), duration: bundle.duration ?? t("غير محددة"), unit: unit()}));
 
         const available =
           bundle.currency === "SAR" &&
@@ -462,14 +486,14 @@
 
         const price = document.createElement("p");
         price.className = "price";
-        price.textContent = available
-          ? `السعر: ${bundle.salePrice.toFixed(2)} ريال سعودي`
-          : "السعر غير متاح حاليًا";
+        setText(price, () => available
+          ? t("السعر: {amount} ريال سعودي", {amount: bundle.salePrice.toFixed(2)})
+          : t("السعر غير متاح حاليًا"));
 
         const button = document.createElement("button");
         button.type = "button";
         button.className = "btn";
-        button.textContent = "اختيار الباقة";
+        setText(button, () => t("اختيار الباقة"));
         button.disabled = !available;
 
         const status = document.createElement("p");
@@ -489,7 +513,7 @@
         if (!query) return;
 
         search.disabled = true;
-        result.textContent = "جارٍ تحميل الباقات…";
+        setText(result, () => t("جارٍ تحميل الباقات…"));
 
         try {
           if (!loading) {
@@ -502,27 +526,26 @@
 
           const matches = bundles.filter(bundle =>
             (bundle.countries || []).some(item =>
-              [item.name, item.iso, arabicName(item)].some(
+              [item.name, item.iso, ...Object.values(regionNames).map(n => { try { return n.of(item.iso); } catch { return item.name; } })].some(
                 name => normalize(name).includes(query)
               )
             )
           );
 
+          textBindings.delete(result);
           result.replaceChildren();
 
           if (!matches.length) {
-            result.textContent =
-              "لا توجد نتائج. جرّب اسم الدولة بالإنجليزية.";
+            setText(result, () => t("لا توجد نتائج. جرّب اسم الدولة بالإنجليزية."));
             return;
           }
 
           const count = document.createElement("p");
-          count.textContent = `عدد الباقات: ${matches.length}`;
+          setText(count, () => t("عدد الباقات: {count}", {count: matches.length}));
           result.append(count);
           matches.forEach(bundle => result.append(createCard(bundle)));
         } catch {
-          result.textContent =
-            "تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا.";
+          setText(result, () => t("تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا."));
         } finally {
           search.disabled = false;
         }
@@ -549,15 +572,14 @@
           customerName.length < 2 ||
           /[\u0000-\u001f\u007f]/.test(customerName)
         ) {
-          paymentStatus.textContent = "أدخل الاسم بشكل صحيح.";
+          setText(paymentStatus, () => t("أدخل الاسم بشكل صحيح."));
           return;
         }
 
         busy = true;
         pay.disabled = true;
         cancel.disabled = true;
-        paymentStatus.textContent =
-          "جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…";
+        setText(paymentStatus, () => t("جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…"));
 
         try {
           const response = await fetch(
@@ -578,12 +600,11 @@
           if (!response.ok) {
             // هذه الحالات يرفضها الخادم قبل إنشاء الفاتورة.
             if ([400, 404, 405, 413, 503].includes(response.status)) {
-              paymentStatus.textContent =
-                data.error || "تعذر تجهيز الدفع حاليًا.";
+              setText(paymentStatus, () => t("تعذر تجهيز الدفع حاليًا."));
               return;
             }
 
-            throw new Error("تعذر تأكيد نتيجة إنشاء الفاتورة.");
+            throw new Error(t("تعذر تأكيد نتيجة إنشاء الفاتورة."));
           }
 
           if (
@@ -593,7 +614,7 @@
             data.currency !== "SAR" ||
             !validAmount(data.amount)
           ) {
-            throw new Error("بيانات الفاتورة غير مكتملة.");
+            throw new Error(t("بيانات الفاتورة غير مكتملة."));
           }
 
           const paymentUrl = trustedPaymentUrl(data.paymentUrl);
@@ -613,32 +634,29 @@
           } catch {}
 
           if (Math.abs(data.amount - selected.amount) > 0.001) {
-            get("selected-price").textContent =
-              `قيمة الفاتورة: ${data.amount.toFixed(2)} ريال سعودي`;
+            setText(get("selected-price"), () => t("قيمة الفاتورة: {amount} ريال سعودي", {amount: data.amount.toFixed(2)}));
 
-            paymentStatus.textContent =
-              "تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، " +
-              "ثم اضغط متابعة الفاتورة إذا وافقت. " +
-              `رقم الطلب: ${data.orderId}`;
+            setText(paymentStatus, () => t("تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، ") +
+              t("ثم اضغط متابعة الفاتورة إذا وافقت. ") +
+              t("رقم الطلب: {id}", {id: data.orderId}));
             return;
           }
 
-          paymentStatus.textContent =
-            `رقم الطلب: ${data.orderId}. جارٍ الانتقال للدفع…`;
+          setText(paymentStatus, () => t("رقم الطلب: {id}. جارٍ الانتقال للدفع…", {id: data.orderId}));
 
           window.location.assign(paymentUrl);
         } catch {
           blocked = true;
-          paymentStatus.textContent =
-            "تعذر تأكيد نتيجة إنشاء الفاتورة. " +
-            "تواصل مع الدعم على info@liveservice-sa.com " +
-            "قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة.";
+          setText(paymentStatus, () => t("تعذر تأكيد نتيجة إنشاء الفاتورة. ") +
+            t("تواصل مع الدعم على info@liveservice-sa.com ") +
+            t("قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة."));
         } finally {
           busy = false;
           pay.disabled = blocked;
           cancel.disabled = blocked;
         }
       });
+      applyLanguage();
     })();
   </script>
 </body>
