@@ -147,7 +147,11 @@
       .hero, .panel { padding: 20px; }
       header { font-size: 14px; }
     }
-  #language { font: inherit; padding: 9px; border: 1px solid #ffffff80; border-radius: 9px; background: white; color: #183b41; max-width: 140px; } header { flex-wrap: wrap; }</style>
+  #language { font: inherit; padding: 9px; border: 1px solid #ffffff80; border-radius: 9px; background: white; color: #183b41; max-width: 140px; } header { flex-wrap: wrap; }
+    html[lang="ar"] .hero h1 { white-space: nowrap; font-size: clamp(22px, 6vw, 35px); letter-spacing: -0.04em; }
+    @media (max-width: 480px) { html[lang="ar"] .hero { padding-inline: 10px; } }
+    html[lang="ar"] .hero h1 .arabic-title { font-size: .65em; letter-spacing: -0.03em; }
+  </style>
 </head>
 
 <body>
@@ -278,6 +282,16 @@
         get("language").value = lang;
         document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
         document.querySelectorAll("[data-i18n-placeholder]").forEach(el => el.placeholder = t(el.dataset.i18nPlaceholder));
+        if (lang === "ar") {
+          const heading = document.querySelector(".hero h1");
+          const arabic = document.createElement("span");
+          arabic.className = "arabic-title";
+          arabic.textContent = "إنترنت السفر مع ";
+          const brand = document.createElement("bdi");
+          brand.textContent = "LiveService eSIM";
+          heading.replaceChildren(arabic, brand);
+        }
+
         for (const [el, getter] of textBindings) {
           if (el.isConnected) el.textContent = getter();
           else textBindings.delete(el);
