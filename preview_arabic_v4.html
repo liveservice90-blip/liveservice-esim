@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>LiveService eSIM</title>
+  <meta name="google-site-verification" content="Djn0KJLvSEJ9nnwKt5pNrIFiNBMYKbbwHWWG00gz7kM" />
+  <style>
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      font-family: Tahoma, Arial, sans-serif;
+      background: #f5f8f8;
+      color: #183b41;
+    }
+
+    header {
+      background: #087f85;
+      color: white;
+      padding: 22px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    main {
+      max-width: 980px;
+      margin: auto;
+      padding: 30px 16px;
+    }
+
+    h1 {
+      font-size: clamp(25px, 5vw, 34px);
+      line-height: 1.6;
+    }
+
+    p { line-height: 1.9; }
+
+    .hero, .panel {
+      background: white;
+      padding: 28px;
+      border-radius: 18px;
+    }
+
+    .hero { box-shadow: 0 8px 30px #1232; }
+    .panel { margin-top: 25px; }
+
+    .btn {
+      display: inline-block;
+      background: #087f85;
+      color: white;
+      border: 0;
+      padding: 14px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font: inherit;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .btn.secondary {
+      background: #e8f1f1;
+      color: #183b41;
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: default;
+    }
+
+    input:not([type="checkbox"]) {
+      display: block;
+      padding: 14px;
+      border: 1px solid #ccd;
+      border-radius: 9px;
+      width: 100%;
+      margin: 10px 0 18px;
+      font: inherit;
+    }
+
+    input[type="email"] {
+      direction: ltr;
+      text-align: left;
+    }
+
+    .card {
+      padding: 20px;
+      margin: 16px 0;
+      border: 1px solid #dce4e5;
+      border-radius: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .card-title {
+      display: block;
+      line-height: 1.7;
+    }
+
+    .price {
+      color: #087f85;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .muted { color: #607b80; }
+
+    .notice {
+      background: #fff3d6;
+      padding: 16px;
+      border-radius: 10px;
+      margin-top: 20px;
+      line-height: 1.9;
+    }
+
+    .status {
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+    }
+
+    .consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.9;
+      margin: 20px 0;
+    }
+
+    .consent input { margin-top: 8px; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 16px;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 480px) {
+      .hero, .panel { padding: 20px; }
+      header { font-size: 14px; }
+    }
+  #language { font: inherit; padding: 9px; border: 1px solid #ffffff80; border-radius: 9px; background: white; color: #183b41; max-width: 140px; } header { flex-wrap: wrap; }
+    html[lang="ar"] .hero h1 { white-space: nowrap; font-size: clamp(22px, 6vw, 35px); letter-spacing: -0.04em; }
+    @media (max-width: 480px) { html[lang="ar"] .hero { padding-inline: 10px; } }
+    html[lang="ar"] .hero h1 bdi { margin-inline-start: 0.3em; }
+    html[lang="ar"] .hero h1 .arabic-title { font-size: .82em; letter-spacing: -0.03em; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <strong>LiveService | خدمة مباشرة</strong>
+    <span>eSIM</span>
+  <select id="language" aria-label="Language / اللغة / Dil"><option value="ar">العربية</option><option value="en">English</option><option value="tr">Türkçe</option><option value="ur">اردو</option></select></header>
+
+  <main>
+    <section class="hero">
+      <h1 data-i18n="إنترنت السفر مع LiveService eSIM">إنترنت السفر مع LiveService eSIM</h1>
+      <p data-i18n="اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة لدى ماي فاتورة.">
+        اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال
+        إلى صفحة الدفع الآمنة لدى ماي فاتورة.
+      </p>
+      <button class="btn" id="browse" type="button" data-i18n="استعرض الباقات">
+        استعرض الباقات
+      </button>
+    </section>
+
+    <section class="panel" id="plans">
+      <h2 data-i18n="ابحث عن باقة">ابحث عن باقة</h2>
+
+      <form id="search-form">
+        <label for="country" data-i18n="الوجهة">الوجهة</label>
+        <input
+          id="country"
+          list="countries"
+          placeholder="مثال: تركيا، السعودية" data-i18n-placeholder="مثال: تركيا، السعودية"
+          autocomplete="off"
+          required
+        >
+        <datalist id="countries"></datalist>
+
+        <button class="btn" id="search" type="submit" data-i18n="بحث">
+          بحث
+        </button>
+      </form>
+
+      <div id="result" aria-live="polite">
+        <p class="muted" data-i18n="اكتب اسم الدولة ثم اضغط بحث.">اكتب اسم الدولة ثم اضغط بحث.</p>
+      </div>
+    </section>
+
+    <section class="panel" id="checkout-panel" hidden>
+      <h2 data-i18n="بيانات الطلب">بيانات الطلب</h2>
+      <p id="selected-name"></p>
+      <p class="price" id="selected-price"></p>
+      <p class="muted" id="payment-methods"></p>
+
+      <form id="payment-form">
+        <label for="customer-name" data-i18n="الاسم الكامل">الاسم الكامل</label>
+        <input
+          id="customer-name"
+          name="customerName"
+          autocomplete="name"
+          minlength="2"
+          maxlength="100"
+          required
+        >
+
+        <label for="customer-email" data-i18n="البريد الإلكتروني">البريد الإلكتروني</label>
+        <input
+          id="customer-email"
+          name="customerEmail"
+          type="email"
+          autocomplete="email"
+          maxlength="254"
+          required
+        >
+
+        <label class="consent">
+          <input id="compatible" type="checkbox" required>
+          <span data-i18n="تأكدت أن جهازي يدعم eSIM وأنه غير مقفل على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.">
+            تأكدت أن جهازي يدعم eSIM وأنه غير مقفل
+            على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.
+          </span>
+        </label>
+
+        <div class="actions">
+          <button class="btn" id="pay" type="submit" data-i18n="الانتقال للدفع">
+            الانتقال للدفع
+          </button>
+          <button
+            class="btn secondary"
+            id="cancel"
+            type="button"
+           data-i18n="تغيير الباقة">
+            تغيير الباقة
+          </button>
+        </div>
+      </form>
+
+      <p class="status" id="payment-status" role="status"></p>
+      <a class="btn" id="continue-payment" hidden data-i18n="متابعة الفاتورة">
+        متابعة الفاتورة
+      </a>
+
+      <div class="notice" data-i18n="تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها. احتفظ بصفحة نتيجة الطلب ورقم الطلب. إرسال بيانات الشريحة بالبريد غير متاح حاليًا.">
+        تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها.
+        احتفظ بصفحة نتيجة الطلب ورقم الطلب.
+        إرسال بيانات الشريحة بالبريد غير متاح حاليًا.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    LiveService © 2026 · info@liveservice-sa.com
+  </footer>
+
+  <script>
+    (() => {
+      const get = id => document.getElementById(id);
+      const translations = {"إنترنت السفر مع LiveService eSIM": {"ar": "إنترنت السفر مع LiveService eSIM", "en": "Travel internet with LiveService eSIM", "tr": "LiveService eSIM ile seyahat interneti", "ur": "LiveService eSIM کے ساتھ سفری انٹرنیٹ"}, "اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة لدى ماي فاتورة.": {"ar": "اختر وجهتك وباقتك، ثم أدخل بياناتك للانتقال إلى صفحة الدفع الآمنة لدى ماي فاتورة.", "en": "Choose your destination and plan, then enter your details to continue to MyFatoorah checkout.", "tr": "Gideceğiniz ülkeyi ve paketinizi seçin, ardından MyFatoorah ödeme sayfasına geçmek için bilgilerinizi girin.", "ur": "اپنی منزل اور پیکیج منتخب کریں، پھر MyFatoorah کے محفوظ ادائیگی صفحے پر جانے کے لیے اپنی تفصیلات درج کریں۔"}, "استعرض الباقات": {"ar": "استعرض الباقات", "en": "Browse plans", "tr": "Paketleri görüntüle", "ur": "پیکیج دیکھیں"}, "ابحث عن باقة": {"ar": "ابحث عن باقة", "en": "Find a plan", "tr": "Paket ara", "ur": "پیکیج تلاش کریں"}, "الوجهة": {"ar": "الوجهة", "en": "Destination", "tr": "Gidilecek ülke", "ur": "منزل"}, "مثال: تركيا، السعودية": {"ar": "مثال: تركيا، السعودية", "en": "Example: Turkey, Saudi Arabia", "tr": "Örnek: Türkiye, Suudi Arabistan", "ur": "مثال: ترکی، سعودی عرب"}, "بحث": {"ar": "بحث", "en": "Search", "tr": "Ara", "ur": "تلاش"}, "اكتب اسم الدولة ثم اضغط بحث.": {"ar": "اكتب اسم الدولة ثم اضغط بحث.", "en": "Enter a country name, then select Search.", "tr": "Ülke adını girin ve Ara düğmesine basın.", "ur": "ملک کا نام درج کریں اور تلاش دبائیں۔"}, "بيانات الطلب": {"ar": "بيانات الطلب", "en": "Order details", "tr": "Sipariş bilgileri", "ur": "آرڈر کی تفصیلات"}, "الاسم الكامل": {"ar": "الاسم الكامل", "en": "Full name", "tr": "Ad soyad", "ur": "پورا نام"}, "البريد الإلكتروني": {"ar": "البريد الإلكتروني", "en": "Email address", "tr": "E-posta adresi", "ur": "ای میل پتہ"}, "تأكدت أن جهازي يدعم eSIM وأنه غير مقفل على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.": {"ar": "تأكدت أن جهازي يدعم eSIM وأنه غير مقفل على شركة اتصالات، وأن وجهة الباقة ومدتها مناسبة لي.", "en": "I confirm that my device supports eSIM and is carrier-unlocked, and that the plan destination and duration suit my needs.", "tr": "Cihazımın eSIM desteklediğini, operatör kilidi olmadığını ve paketin ülkesinin ve süresinin bana uygun olduğunu onaylıyorum.", "ur": "میں تصدیق کرتا ہوں کہ میرا آلہ eSIM کو سپورٹ کرتا ہے، کسی نیٹ ورک پر مقفل نہیں، اور پیکیج کی منزل اور مدت میرے لیے مناسب ہیں۔"}, "الانتقال للدفع": {"ar": "الانتقال للدفع", "en": "Continue to payment", "tr": "Ödemeye geç", "ur": "ادائیگی کی طرف جائیں"}, "تغيير الباقة": {"ar": "تغيير الباقة", "en": "Change plan", "tr": "Paketi değiştir", "ur": "پیکیج تبدیل کریں"}, "متابعة الفاتورة": {"ar": "متابعة الفاتورة", "en": "Continue to invoice", "tr": "Faturaya devam et", "ur": "انوائس جاری رکھیں"}, "تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها. احتفظ بصفحة نتيجة الطلب ورقم الطلب. إرسال بيانات الشريحة بالبريد غير متاح حاليًا.": {"ar": "تظهر بيانات تثبيت الشريحة بعد تأكيد الدفع وإصدارها. احتفظ بصفحة نتيجة الطلب ورقم الطلب. إرسال بيانات الشريحة بالبريد غير متاح حاليًا.", "en": "Installation details appear after payment is confirmed and the eSIM is issued. Keep the order result page and order number. Email delivery of eSIM details is currently unavailable.", "tr": "Kurulum bilgileri, ödeme onaylandıktan ve eSIM oluşturulduktan sonra gösterilir. Sipariş sonuç sayfasını ve sipariş numarasını saklayın. eSIM bilgilerinin e-posta ile gönderilmesi şu anda kullanılamıyor.", "ur": "ادائیگی کی تصدیق اور eSIM جاری ہونے کے بعد تنصیب کی تفصیلات ظاہر ہوں گی۔ آرڈر کا نتیجہ اور نمبر محفوظ رکھیں۔ فی الحال تفصیلات ای میل سے نہیں بھیجی جاتیں۔"}, "رابط الدفع غير صحيح.": {"ar": "رابط الدفع غير صحيح.", "en": "Invalid payment link.", "tr": "Ödeme bağlantısı geçersiz.", "ur": "ادائیگی کا لنک غلط ہے۔"}, "تعذر التحقق من رابط الدفع.": {"ar": "تعذر التحقق من رابط الدفع.", "en": "Unable to verify the payment link.", "tr": "Ödeme bağlantısı doğrulanamadı.", "ur": "ادائیگی کے لنک کی تصدیق نہیں ہو سکی۔"}, "تعذر تحميل الباقات": {"ar": "تعذر تحميل الباقات", "en": "Unable to load plans.", "tr": "Paketler yüklenemedi.", "ur": "پیکیج لوڈ نہیں ہو سکے۔"}, "تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر.": {"ar": "تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر.", "en": "Continue your current order or contact support before creating another order.", "tr": "Yeni bir sipariş oluşturmadan önce mevcut siparişinize devam edin veya destekle iletişime geçin.", "ur": "نیا آرڈر بنانے سے پہلے موجودہ آرڈر جاری رکھیں یا سپورٹ سے رابطہ کریں۔"}, "جارٍ التحقق من السعر ووسائل الدفع…": {"ar": "جارٍ التحقق من السعر ووسائل الدفع…", "en": "Checking price and payment methods…", "tr": "Fiyat ve ödeme yöntemleri kontrol ediliyor…", "ur": "قیمت اور ادائیگی کے طریقے چیک کیے جا رہے ہیں…"}, "تعذر التحقق من السعر.": {"ar": "تعذر التحقق من السعر.", "en": "Unable to verify the price.", "tr": "Fiyat doğrulanamadı.", "ur": "قیمت کی تصدیق نہیں ہو سکی۔"}, "السعر أو وسائل الدفع غير متاحة حاليًا.": {"ar": "السعر أو وسائل الدفع غير متاحة حاليًا.", "en": "Price or payment methods are currently unavailable.", "tr": "Fiyat veya ödeme yöntemleri şu anda kullanılamıyor.", "ur": "قیمت یا ادائیگی کے طریقے فی الحال دستیاب نہیں۔"}, "وسائل الدفع: ": {"ar": "وسائل الدفع: ", "en": "Payment methods: ", "tr": "Ödeme yöntemleri: ", "ur": "ادائیگی کے طریقے: "}, "أكمل بيانات الطلب أسفل الصفحة.": {"ar": "أكمل بيانات الطلب أسفل الصفحة.", "en": "Complete your order details below.", "tr": "Aşağıdaki sipariş bilgilerini doldurun.", "ur": "نیچے آرڈر کی تفصیلات مکمل کریں۔"}, "تعذر الاتصال، حاول مجددًا.": {"ar": "تعذر الاتصال، حاول مجددًا.", "en": "Connection failed. Please try again.", "tr": "Bağlantı kurulamadı. Lütfen tekrar deneyin.", "ur": "کنکشن ناکام، دوبارہ کوشش کریں۔"}, "بيانات غير محدودة": {"ar": "بيانات غير محدودة", "en": "Unlimited data", "tr": "Sınırsız veri", "ur": "لامحدود ڈیٹا"}, "راجع تفاصيل الباقة": {"ar": "راجع تفاصيل الباقة", "en": "See plan details", "tr": "Paket ayrıntılarına bakın", "ur": "پیکیج کی تفصیلات دیکھیں"}, "يوم": {"ar": "يوم", "en": "days", "tr": "gün", "ur": "دن"}, "غير محددة": {"ar": "غير محددة", "en": "Not specified", "tr": "Belirtilmedi", "ur": "متعین نہیں"}, "السعر غير متاح حاليًا": {"ar": "السعر غير متاح حاليًا", "en": "Price currently unavailable", "tr": "Fiyat şu anda kullanılamıyor", "ur": "قیمت فی الحال دستیاب نہیں"}, "اختيار الباقة": {"ar": "اختيار الباقة", "en": "Select plan", "tr": "Paketi seç", "ur": "پیکیج منتخب کریں"}, "جارٍ تحميل الباقات…": {"ar": "جارٍ تحميل الباقات…", "en": "Loading plans…", "tr": "Paketler yükleniyor…", "ur": "پیکیج لوڈ ہو رہے ہیں…"}, "لا توجد نتائج. جرّب اسم الدولة بالإنجليزية.": {"ar": "لا توجد نتائج. جرّب اسم الدولة بالإنجليزية.", "en": "No results. Try the country name in English.", "tr": "Sonuç bulunamadı. Ülke adını İngilizce deneyin.", "ur": "کوئی نتیجہ نہیں ملا۔ ملک کا نام انگریزی میں آزمائیں۔"}, "تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا.": {"ar": "تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا.", "en": "Unable to load plans. Select Search to retry.", "tr": "Paketler yüklenemedi. Tekrar denemek için Ara düğmesine basın.", "ur": "پیکیج لوڈ نہیں ہو سکے۔ دوبارہ تلاش دبائیں۔"}, "أدخل الاسم بشكل صحيح.": {"ar": "أدخل الاسم بشكل صحيح.", "en": "Please enter a valid name.", "tr": "Lütfen geçerli bir ad girin.", "ur": "درست نام درج کریں۔"}, "جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…": {"ar": "جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…", "en": "Preparing your invoice. Please wait without clicking again…", "tr": "Faturanız hazırlanıyor. Tekrar tıklamadan bekleyin…", "ur": "انوائس تیار ہو رہی ہے، دوبارہ دبائے بغیر انتظار کریں…"}, "تعذر تجهيز الدفع حاليًا.": {"ar": "تعذر تجهيز الدفع حاليًا.", "en": "Unable to prepare payment at this time.", "tr": "Ödeme şu anda hazırlanamadı.", "ur": "فی الحال ادائیگی تیار نہیں ہو سکی۔"}, "تعذر تأكيد نتيجة إنشاء الفاتورة.": {"ar": "تعذر تأكيد نتيجة إنشاء الفاتورة.", "en": "Unable to confirm whether the invoice was created.", "tr": "Faturanın oluşturulup oluşturulmadığı doğrulanamadı.", "ur": "انوائس بننے کی تصدیق نہیں ہو سکی۔"}, "بيانات الفاتورة غير مكتملة.": {"ar": "بيانات الفاتورة غير مكتملة.", "en": "Invoice details are incomplete.", "tr": "Fatura bilgileri eksik.", "ur": "انوائس کی تفصیلات نامکمل ہیں۔"}, "تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، ": {"ar": "تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، ", "en": "The price has changed since you selected the plan. Review the invoice amount, ", "tr": "Paketi seçtiğinizden beri fiyat değişti. Fatura tutarını kontrol edin, ", "ur": "پیکیج منتخب کرنے کے بعد قیمت بدل گئی ہے۔ انوائس کی رقم چیک کریں، "}, "ثم اضغط متابعة الفاتورة إذا وافقت. ": {"ar": "ثم اضغط متابعة الفاتورة إذا وافقت. ", "en": "then select Continue to invoice if you agree. ", "tr": "kabul ediyorsanız Faturaya devam et düğmesine basın. ", "ur": "اور اگر آپ متفق ہوں تو انوائس جاری رکھیں دبائیں۔ "}, "تعذر تأكيد نتيجة إنشاء الفاتورة. ": {"ar": "تعذر تأكيد نتيجة إنشاء الفاتورة. ", "en": "Unable to confirm whether the invoice was created. ", "tr": "Faturanın oluşturulup oluşturulmadığı doğrulanamadı. ", "ur": "انوائس بننے کی تصدیق نہیں ہو سکی۔ "}, "تواصل مع الدعم على info@liveservice-sa.com ": {"ar": "تواصل مع الدعم على info@liveservice-sa.com ", "en": "Contact support at info@liveservice-sa.com ", "tr": "info@liveservice-sa.com adresinden destekle iletişime geçin. ", "ur": "info@liveservice-sa.com پر سپورٹ سے رابطہ کریں "}, "قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة.": {"ar": "قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة.", "en": "before retrying to avoid creating duplicate invoices.", "tr": "Birden fazla fatura oluşturmamak için tekrar denemeden önce destek alın.", "ur": "متعدد انوائس سے بچنے کے لیے دوبارہ کوشش کرنے سے پہلے۔"}, "السعر المؤكد: {amount} ريال سعودي": {"ar": "السعر المؤكد: {amount} ريال سعودي", "en": "Confirmed price: SAR {amount}", "tr": "Onaylanan fiyat: {amount} SAR", "ur": "تصدیق شدہ قیمت: {amount} سعودی ریال"}, "{amount} جيجابايت": {"ar": "{amount} جيجابايت", "en": "{amount} GB", "tr": "{amount} GB", "ur": "{amount} جی بی"}, "{allowance} — المدة: {duration} {unit}": {"ar": "{allowance} — المدة: {duration} {unit}", "en": "{allowance} — Duration: {duration} {unit}", "tr": "{allowance} — Süre: {duration} {unit}", "ur": "{allowance} — مدت: {duration} {unit}"}, "السعر: {amount} ريال سعودي": {"ar": "السعر: {amount} ريال سعودي", "en": "Price: SAR {amount}", "tr": "Fiyat: {amount} SAR", "ur": "قیمت: {amount} سعودی ریال"}, "عدد الباقات: {count}": {"ar": "عدد الباقات: {count}", "en": "Plans: {count}", "tr": "Paket sayısı: {count}", "ur": "پیکیجز کی تعداد: {count}"}, "قيمة الفاتورة: {amount} ريال سعودي": {"ar": "قيمة الفاتورة: {amount} ريال سعودي", "en": "Invoice amount: SAR {amount}", "tr": "Fatura tutarı: {amount} SAR", "ur": "انوائس کی رقم: {amount} سعودی ریال"}, "رقم الطلب: {id}": {"ar": "رقم الطلب: {id}", "en": "Order number: {id}", "tr": "Sipariş numarası: {id}", "ur": "آرڈر نمبر: {id}"}, "رقم الطلب: {id}. جارٍ الانتقال للدفع…": {"ar": "رقم الطلب: {id}. جارٍ الانتقال للدفع…", "en": "Order number: {id}. Redirecting to payment…", "tr": "Sipariş numarası: {id}. Ödemeye yönlendiriliyorsunuz…", "ur": "آرڈر نمبر: {id}۔ ادائیگی کی طرف منتقل کیا جا رہا ہے…"}};
+      let lang = "ar";
+      try { const saved = localStorage.getItem("liveservice-language"); if (["ar", "en", "tr", "ur"].includes(saved)) lang = saved; } catch {}
+      const textBindings = new Map();
+      function t(key, values = {}) {
+        return (translations[key]?.[lang] || key).replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ""));
+      }
+      function setText(element, getter) {
+        textBindings.set(element, getter);
+        element.textContent = getter();
+      }
+      function applyLanguage() {
+        document.documentElement.lang = lang;
+        document.documentElement.dir = ["ar", "ur"].includes(lang) ? "rtl" : "ltr";
+        get("language").value = lang;
+        document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+        document.querySelectorAll("[data-i18n-placeholder]").forEach(el => el.placeholder = t(el.dataset.i18nPlaceholder));
+        if (lang === "ar") {
+          const heading = document.querySelector(".hero h1");
+          const arabic = document.createElement("span");
+          arabic.className = "arabic-title";
+          arabic.textContent = "إنترنت السفر مع ";
+          const brand = document.createElement("bdi");
+          brand.textContent = "LiveService eSIM";
+          heading.replaceChildren(arabic, brand);
+        }
+
+        for (const [el, getter] of textBindings) {
+          if (el.isConnected) el.textContent = getter();
+          else textBindings.delete(el);
+        }
+        populateCountries();
+      }
+      get("language").addEventListener("change", event => {
+        lang = event.target.value;
+        try { localStorage.setItem("liveservice-language", lang); } catch {}
+        applyLanguage();
+      });
+
+      const country = get("country");
+      const result = get("result");
+      const search = get("search");
+      const list = get("countries");
+      const panel = get("checkout-panel");
+      const pay = get("pay");
+      const cancel = get("cancel");
+      const paymentStatus = get("payment-status");
+      const continuePayment = get("continue-payment");
+
+      let bundles = [];
+      let loading = null;
+      let selected = null;
+      let busy = false;
+      let blocked = false;
+      let selectionVersion = 0;
+      const regionNames = {};
+      for (const code of ["ar", "en", "tr", "ur"]) {
+        try { regionNames[code] = new Intl.DisplayNames([code], {type: "region"}); } catch {}
+      }
+
+      const normalize = value => String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[أإآ]/g, "ا")
+        .replace(/ة/g, "ه")
+        .replace(/ى/g, "ي");
+
+      function arabicName(item) {
+        try {
+          return regionNames[lang]?.of(item.iso) || item.name || item.iso;
+        } catch {
+          return item.name || item.iso;
+        }
+      }
+
+      function validAmount(value) {
+        return typeof value === "number" &&
+          Number.isFinite(value) &&
+          value > 0;
+      }
+
+      function trustedPaymentUrl(value) {
+        if (typeof value !== "string") {
+          throw new Error(t("رابط الدفع غير صحيح."));
+        }
+
+        const url = new URL(value);
+        const trusted =
+          url.hostname === "myfatoorah.com" ||
+          url.hostname.endsWith(".myfatoorah.com");
+
+        if (
+          url.protocol !== "https:" ||
+          !trusted ||
+          url.username ||
+          url.password
+        ) {
+          throw new Error(t("تعذر التحقق من رابط الدفع."));
+        }
+
+        return url.toString();
+      }
+
+      get("browse").onclick = () => {
+        get("plans").scrollIntoView({ behavior: "smooth" });
+      };
+
+      async function load() {
+        const response = await fetch(
+          "/.netlify/functions/catalogue",
+          { cache: "no-store" }
+        );
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data.bundles)) {
+          throw new Error(t("تعذر تحميل الباقات"));
+        }
+
+        bundles = data.bundles;
+        populateCountries();
+      }
+
+      function populateCountries() {
+        const countries = new Map();
+
+        bundles.forEach(bundle => {
+          (bundle.countries || []).forEach(item => {
+            if (item.iso) {
+              countries.set(item.iso, arabicName(item));
+            }
+          });
+        });
+
+        list.replaceChildren();
+
+        [...new Set(countries.values())]
+          .sort((a, b) => String(a).localeCompare(String(b), lang))
+          .forEach(name => {
+            const option = document.createElement("option");
+            option.value = name;
+            list.append(option);
+          });
+      }
+
+      async function selectBundle(bundle, button, status) {
+        if (busy || blocked) {
+          setText(status, () => t("تابع الطلب الحالي أو تواصل مع الدعم قبل إنشاء طلب آخر."));
+          return;
+        }
+
+        const version = ++selectionVersion;
+        selected = null;
+        panel.hidden = true;
+        button.disabled = true;
+        setText(status, () => t("جارٍ التحقق من السعر ووسائل الدفع…"));
+
+        try {
+          const response = await fetch(
+            "/.netlify/functions/checkout",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ bundleName: bundle.name })
+            }
+          );
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(t("تعذر التحقق من السعر."));
+          }
+
+          if (
+            data.currency !== "SAR" ||
+            !validAmount(data.amount) ||
+            !Array.isArray(data.methods) ||
+            !data.methods.length
+          ) {
+            throw new Error(t("السعر أو وسائل الدفع غير متاحة حاليًا."));
+          }
+
+          if (version !== selectionVersion) return;
+
+          selected = {
+            name: bundle.name,
+            amount: data.amount
+          };
+
+          setText(get("selected-name"), () => bundle.description || bundle.name);
+          setText(get("selected-price"), () => t("السعر المؤكد: {amount} ريال سعودي", {amount: data.amount.toFixed(2)}));
+          setText(get("payment-methods"), () => t("وسائل الدفع: ") +
+            data.methods.map(method => method.name).join("، "));
+
+          setText(paymentStatus, () => "");
+          continuePayment.hidden = true;
+          get("compatible").checked = false;
+          panel.hidden = false;
+          setText(status, () => t("أكمل بيانات الطلب أسفل الصفحة."));
+          panel.scrollIntoView({ behavior: "smooth" });
+        } catch (error) {
+          if (version === selectionVersion) {
+            setText(status, () => error.message || t("تعذر الاتصال، حاول مجددًا."));
+          }
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      function createCard(bundle) {
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const title = document.createElement("strong");
+        title.className = "card-title";
+        setText(title, () => bundle.description || bundle.name);
+
+        const details = document.createElement("p");
+        const amount = Number(bundle.dataAmount);
+        const allowance = () => bundle.unlimited
+          ? t("بيانات غير محدودة")
+          : Number.isFinite(amount) && amount > 0
+            ? t("{amount} جيجابايت", {amount: amount / 1000})
+            : t("راجع تفاصيل الباقة");
+
+        const unit = () => bundle.durationUnit === "day"
+          ? t("يوم")
+          : bundle.durationUnit || "";
+
+        setText(details, () => t("{allowance} — المدة: {duration} {unit}", {allowance: allowance(), duration: bundle.duration ?? t("غير محددة"), unit: unit()}));
+
+        const available =
+          bundle.currency === "SAR" &&
+          validAmount(bundle.salePrice);
+
+        const price = document.createElement("p");
+        price.className = "price";
+        setText(price, () => available
+          ? t("السعر: {amount} ريال سعودي", {amount: bundle.salePrice.toFixed(2)})
+          : t("السعر غير متاح حاليًا"));
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn";
+        setText(button, () => t("اختيار الباقة"));
+        button.disabled = !available;
+
+        const status = document.createElement("p");
+        status.className = "status";
+        status.setAttribute("aria-live", "polite");
+
+        button.onclick = () =>
+          selectBundle(bundle, button, status);
+
+        const planIdentity = String(bundle.name || "") + " " + String(bundle.description || "");
+        const planType = /(?:^|[^a-z])(?:esim_ule_|unlimited\s+essential)/i.test(planIdentity) ? "essential" :
+          /(?:^|[^a-z])(?:esim_ulp_|unlimited\s+plus)/i.test(planIdentity) ? "plus" : null;
+        if (bundle.unlimited === true && planType) {
+          const info = document.createElement("p");
+          info.className = "notice";
+          const descriptions = {
+            ar: { essential: "1 جيجابايت بسرعة كاملة لكل دورة يومية، ثم تستمر الخدمة بسرعة 1.25 ميجابت/ثانية. يختلف وقت التجدد حسب نوع الشريحة.", plus: "2 جيجابايت بسرعة كاملة لكل دورة يومية، ثم تستمر الخدمة بسرعة 2 ميجابت/ثانية. يختلف وقت التجدد حسب نوع الشريحة." },
+            en: { essential: "1 GB at full speed per daily cycle, then unlimited data at 1.25 Mbps. Reset time depends on the eSIM profile.", plus: "2 GB at full speed per daily cycle, then unlimited data at 2 Mbps. Reset time depends on the eSIM profile." },
+            tr: { essential: "Günlük dönemde 1 GB tam hız, ardından 1,25 Mbps hızında sınırsız veri. Yenilenme zamanı eSIM profiline bağlıdır.", plus: "Günlük dönemde 2 GB tam hız, ardından 2 Mbps hızında sınırsız veri. Yenilenme zamanı eSIM profiline bağlıdır." },
+            ur: { essential: "ہر روز 1 جی بی مکمل رفتار پر، پھر 1.25 Mbps پر لامحدود ڈیٹا۔ تجدید کا وقت eSIM پروفائل پر منحصر ہے۔", plus: "ہر روز 2 جی بی مکمل رفتار پر، پھر 2 Mbps پر لامحدود ڈیٹا۔ تجدید کا وقت eSIM پروفائل پر منحصر ہے۔" }
+          };
+          setText(info, () => descriptions[lang][planType]);
+          card.append(title, details, info, price, button, status);
+        } else {
+          card.append(title, details, price, button, status);
+        }
+        return card;
+      }
+
+      get("search-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        const query = normalize(country.value);
+        if (!query) return;
+
+        search.disabled = true;
+        setText(result, () => t("جارٍ تحميل الباقات…"));
+
+        try {
+          if (!loading) {
+            loading = load().catch(error => {
+              loading = null;
+              throw error;
+            });
+          }
+          await loading;
+
+          const matches = bundles.filter(bundle =>
+            (bundle.countries || []).some(item =>
+              [item.name, item.iso, ...Object.values(regionNames).map(n => { try { return n.of(item.iso); } catch { return item.name; } })].some(
+                name => normalize(name).includes(query)
+              )
+            )
+          );
+
+          textBindings.delete(result);
+          result.replaceChildren();
+
+          if (!matches.length) {
+            setText(result, () => t("لا توجد نتائج. جرّب اسم الدولة بالإنجليزية."));
+            return;
+          }
+
+          const count = document.createElement("p");
+          setText(count, () => t("عدد الباقات: {count}", {count: matches.length}));
+          result.append(count);
+          const filters = document.createElement("div");
+          filters.className = "actions";
+          const cards = document.createElement("div");
+          const labels = {
+            ar: ["الكل", "محدود", "غير محدود", "لا توجد باقات من هذا النوع."],
+            ur: ["تمام", "محدود", "لامحدود", "اس قسم کا کوئی پیکیج دستیاب نہیں۔"],
+            en: ["All", "Limited", "Unlimited", "No plans of this type."],
+            tr: ["Tümü", "Sınırlı", "Sınırsız", "Bu türde paket bulunamadı."]
+          };
+          function showPlans(type) {
+            cards.replaceChildren();
+            const filtered = matches.filter(bundle => type === "all" ||
+              (type === "unlimited" ? bundle.unlimited === true : bundle.unlimited === false));
+            if (!filtered.length) {
+              const message = document.createElement("p");
+              setText(message, () => labels[lang][3]);
+              cards.append(message);
+            } else filtered.forEach(bundle => cards.append(createCard(bundle)));
+          }
+          [["all", 0], ["limited", 1], ["unlimited", 2]].forEach(([type, index]) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn secondary";
+            setText(button, () => labels[lang][index]);
+            button.onclick = () => showPlans(type);
+            filters.append(button);
+          });
+          result.append(filters, cards);
+          showPlans("all");
+        } catch {
+          setText(result, () => t("تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا."));
+        } finally {
+          search.disabled = false;
+        }
+      });
+
+      cancel.onclick = () => {
+        if (busy || blocked) return;
+        selectionVersion++;
+        selected = null;
+        panel.hidden = true;
+        get("plans").scrollIntoView({ behavior: "smooth" });
+      };
+
+      get("payment-form").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (!selected || busy || blocked) return;
+        if (!get("payment-form").reportValidity()) return;
+
+        const customerName = get("customer-name").value.trim();
+        const customerEmail = get("customer-email").value.trim();
+
+        if (
+          customerName.length < 2 ||
+          /[\u0000-\u001f\u007f]/.test(customerName)
+        ) {
+          setText(paymentStatus, () => t("أدخل الاسم بشكل صحيح."));
+          return;
+        }
+
+        busy = true;
+        pay.disabled = true;
+        cancel.disabled = true;
+        setText(paymentStatus, () => t("جارٍ تجهيز الفاتورة، انتظر دون إعادة الضغط…"));
+
+        try {
+          const response = await fetch(
+            "/.netlify/functions/createpayment",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                bundleName: selected.name,
+                customerName,
+                customerEmail
+              })
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            // هذه الحالات يرفضها الخادم قبل إنشاء الفاتورة.
+            if ([400, 404, 405, 413, 503].includes(response.status)) {
+              setText(paymentStatus, () => t("تعذر تجهيز الدفع حاليًا."));
+              return;
+            }
+
+            throw new Error(t("تعذر تأكيد نتيجة إنشاء الفاتورة."));
+          }
+
+          if (
+            typeof data.orderId !== "string" ||
+            !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+              .test(data.orderId) ||
+            data.currency !== "SAR" ||
+            !validAmount(data.amount)
+          ) {
+            throw new Error(t("بيانات الفاتورة غير مكتملة."));
+          }
+
+          const paymentUrl = trustedPaymentUrl(data.paymentUrl);
+          blocked = true;
+
+          continuePayment.href = paymentUrl;
+          continuePayment.hidden = false;
+
+          // رقم الطلب للمراجعة مع الدعم، وليس رابطًا لاسترجاع الشريحة.
+          try {
+            localStorage.setItem("liveservice-last-order", JSON.stringify({
+              orderId: data.orderId,
+              amount: data.amount,
+              currency: data.currency,
+              createdAt: new Date().toISOString()
+            }));
+          } catch {}
+
+          if (Math.abs(data.amount - selected.amount) > 0.001) {
+            setText(get("selected-price"), () => t("قيمة الفاتورة: {amount} ريال سعودي", {amount: data.amount.toFixed(2)}));
+
+            setText(paymentStatus, () => t("تغيّر السعر منذ اختيار الباقة. راجع قيمة الفاتورة، ") +
+              t("ثم اضغط متابعة الفاتورة إذا وافقت. ") +
+              t("رقم الطلب: {id}", {id: data.orderId}));
+            return;
+          }
+
+          setText(paymentStatus, () => t("رقم الطلب: {id}. جارٍ الانتقال للدفع…", {id: data.orderId}));
+
+          window.location.assign(paymentUrl);
+        } catch {
+          blocked = true;
+          setText(paymentStatus, () => t("تعذر تأكيد نتيجة إنشاء الفاتورة. ") +
+            t("تواصل مع الدعم على info@liveservice-sa.com ") +
+            t("قبل إعادة المحاولة لتجنب إنشاء فواتير متعددة."));
+        } finally {
+          busy = false;
+          pay.disabled = blocked;
+          cancel.disabled = blocked;
+        }
+      });
+      applyLanguage();
+    })();
+  </script>
+</body>
+</html>
