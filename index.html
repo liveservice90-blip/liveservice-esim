@@ -160,7 +160,9 @@
     html[lang="ar"] .hero h1 bdi { color: #087f85; }
   
     html[lang="ar"] .hero h1 .arabic-title { color: #4b0082; }
-  </style>
+  .plan-filter[aria-pressed="true"] { outline: 3px solid #087f83; outline-offset: -3px; }
+.plan-filter[aria-pressed="true"]::before { content: "✓ "; font-weight: bold; color: #087f83; }
+</style>
 </head>
 
 <body>
@@ -592,6 +594,7 @@
             tr: ["Tümü", "Sınırlı", "Sınırsız", "Bu türde paket bulunamadı."]
           };
           function showPlans(type) {
+            filters.querySelectorAll(".plan-filter").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.type === type)));
             cards.replaceChildren();
             const filtered = matches.filter(bundle => type === "all" ||
               (type === "unlimited" ? bundle.unlimited === true : bundle.unlimited === false));
@@ -604,7 +607,8 @@
           [["all", 0], ["limited", 1], ["unlimited", 2]].forEach(([type, index]) => {
             const button = document.createElement("button");
             button.type = "button";
-            button.className = "btn secondary";
+            button.className = "btn secondary plan-filter";
+            button.dataset.type = type;
             setText(button, () => labels[lang][index]);
             button.onclick = () => showPlans(type);
             filters.append(button);
