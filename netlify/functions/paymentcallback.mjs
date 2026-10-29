@@ -1,4 +1,7 @@
 import { getStore } from "@netlify/blobs";
+import nodemailer from "nodemailer";
+
+const SITE_URL = "https://liveservice-esim.netlify.app";
 
 const escape = value =>
   String(value ?? "").replace(
@@ -11,6 +14,12 @@ const escape = value =>
       "'": "&#39;"
     })[char]
   );
+
+const validEmail = value =>
+  typeof value === "string" &&
+  value.length <= 254 &&
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) &&
+  !/[\r\n]/.test(value);
 
 const headers = {
   "Cache-Control": "no-store",
@@ -39,7 +48,6 @@ function page(status, message, extra = "") {
       color: #183b41;
       font-family: Tahoma, Arial;
     }
-
     main {
       max-width: 620px;
       margin: 25px auto;
@@ -49,9 +57,7 @@ function page(status, message, extra = "") {
       line-height: 2;
       overflow-wrap: anywhere;
     }
-
     a { color: #087f85; }
-
     .button {
       display: inline-block;
       padding: 12px 20px;
@@ -60,7 +66,6 @@ function page(status, message, extra = "") {
       border-radius: 10px;
       text-decoration: none;
     }
-
     code {
       display: block;
       direction: ltr;
@@ -89,6 +94,203 @@ function page(status, message, extra = "") {
       }
     }
   );
+}
+
+// فشل البريد لا يمنع ظهور بيانات الشريحة.
+// لا نعيد المحاولة تلقائيًا بعد بدء الإرسال، لأن انقطاع
+// الاتصال قد يحدث بعد قبول خادم البريد للرسالة.
+async function sendDeliveryEmail({
+  store,
+  order,
+  sim,
+  resultUrl,
+  downloadUrl
+}) {
+  const key = `email:${order.orderId}:${order.invoiceId}`;
+  let transporter;
+
+  try {
+    const previous = await store.get(key, {
+      type: "json"
+    });
+
+    if (previous?.status === "sent") {
+      return "قبل خادم البريد رسالة بيانات الشريحة. تحقق من الوارد والبريد غير المرغوب فيه.";
+    }
+
+    if (previous) {
+      return "سبق بدء محاولة إرسال البريد. إذا لم تصلك الرسالة، احتفظ ببيانات الشريحة الظاهرة هنا وتواصل مع الدعم.";
+    }
+
+    const host = process.env.SMTP_HOST?.trim();
+    const port = Number(process.env.SMTP_PORT || "465");
+    const user = process.env.SMTP_USER?.trim();
+    const pass = process.env.SMTP_PASS;
+    const from = process.env.SMTP_FROM?.trim();
+
+    if (
+      !host ||
+      ![465, 587, 25].includes(port) ||
+      !user ||
+      !pass ||
+      !validEmail(from) ||
+      !validEmail(order.customerEmail)
+    ) {
+      return "بيانات الشريحة جاهزة هنا، لكن إعدادات إرسال البريد أو عنوان المستلم غير مكتملة.";
+    }
+
+    transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      requireTLS: port !== 465,
+      auth: {
+        user,
+        pass
+      },
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 12000,
+      disableFileAccess: true,
+      disableUrlAccess: true,
+      tls: {
+        minVersion: "TLSv1.2"
+      }
+    });
+
+    const claim = await store.setJSON(
+      key,
+      {
+        status: "sending",
+        orderId: order.orderId,
+        invoiceId: order.invoiceId,
+        startedAt: new Date().toISOString()
+      },
+      { onlyIfNew: true }
+    );
+
+    if (claim?.modified !== true) {
+      return "سبق بدء محاولة إرسال البريد. تحقق من بريدك، واحتفظ ببيانات الشريحة الظاهرة هنا.";
+    }
+
+    const description =
+      order.description || order.bundleName;
+
+    const text = [
+      "LiveService eSIM",
+      "",
+      `مرحبًا ${order.customerName || "بك"}،`,
+      "تم تأكيد السداد وبيانات شريحتك جاهزة.",
+      "",
+      `رقم الطلب: ${order.orderId}`,
+      `الباقة: ${description}`,
+      `ICCID: ${sim.iccid}`,
+      "",
+      "بيانات التثبيت اليدوي:",
+      `SM-DP+: ${sim.smdpAddress}`,
+      `رمز التفعيل: ${sim.matchingId}`,
+      "",
+      "تحميل ملف QR المضغوط:",
+      downloadUrl,
+      "",
+      "صفحة بيانات الشريحة:",
+      resultUrl,
+      "",
+      "احتفظ بهذه البيانات والروابط في مكان خاص.",
+      "لا تشارك رمز التفعيل أو رابط الشريحة مع الآخرين.",
+      "",
+      "للدعم: info@liveservice-sa.com"
+    ].join("\n");
+
+    const info = await transporter.sendMail({
+      from: {
+        name: "LiveService eSIM",
+        address: from
+      },
+      to: {
+        address: order.customerEmail.trim()
+      },
+      subject: "بيانات شريحتك الإلكترونية | LiveService eSIM",
+      messageId:
+        `<esim-${order.orderId}-${order.invoiceId}@liveservice-sa.com>`,
+      text,
+      html: `
+        <!doctype html>
+        <html lang="ar" dir="rtl">
+        <body style="margin:0;padding:20px;background:#f5f8f8;
+          font-family:Tahoma,Arial;color:#183b41">
+          <main style="max-width:620px;margin:auto;padding:24px;
+            background:white;border-radius:16px;line-height:2;
+            overflow-wrap:anywhere">
+            <h1 style="color:#087f85">LiveService eSIM</h1>
+            <p>مرحبًا ${escape(order.customerName || "بك")}،</p>
+            <p>تم تأكيد السداد وبيانات شريحتك جاهزة.</p>
+
+            <p>رقم الطلب:</p>
+            <p dir="ltr">${escape(order.orderId)}</p>
+
+            <p>الباقة: ${escape(description)}</p>
+
+            <p>رقم الشريحة ICCID:</p>
+            <p dir="ltr">${escape(sim.iccid)}</p>
+
+            <p>
+              <a href="${escape(downloadUrl)}"
+                style="display:inline-block;padding:12px 20px;
+                background:#087f85;color:white;border-radius:10px;
+                text-decoration:none">
+                تحميل ملف QR
+              </a>
+            </p>
+
+            <p>افتح الملف المضغوط للوصول إلى صورة QR.</p>
+            <p>وللتثبيت اليدوي استخدم البيانات التالية:</p>
+
+            <p>عنوان SM-DP+:</p>
+            <p dir="ltr">${escape(sim.smdpAddress)}</p>
+
+            <p>رمز التفعيل:</p>
+            <p dir="ltr">${escape(sim.matchingId)}</p>
+
+            <p>
+              <a href="${escape(resultUrl)}">
+                عرض صفحة بيانات الشريحة
+              </a>
+            </p>
+
+            <p>
+              احتفظ بهذه البيانات والروابط في مكان خاص،
+              ولا تشاركها مع الآخرين.
+            </p>
+
+            <p>للدعم: info@liveservice-sa.com</p>
+          </main>
+        </body>
+        </html>
+      `
+    });
+
+    if (!Array.isArray(info.accepted) || !info.accepted.length) {
+      throw new Error("SMTP did not accept recipient");
+    }
+
+    await store.setJSON(key, {
+      status: "sent",
+      orderId: order.orderId,
+      invoiceId: order.invoiceId,
+      sentAt: new Date().toISOString()
+    });
+
+    return "قبل خادم البريد رسالة بيانات الشريحة. تحقق من الوارد والبريد غير المرغوب فيه.";
+  } catch {
+    // نحتفظ بالحجز لمنع تكرار الرسالة عند تحديث الصفحة.
+    // إذا انقطع الاتصال بعد الإرسال، قد تكون الرسالة وصلت.
+    return "تعذر تأكيد إرسال البريد. بيانات شريحتك متاحة هنا؛ احفظها وتواصل مع الدعم إذا لم تصلك الرسالة.";
+  } finally {
+    if (transporter) {
+      transporter.close();
+    }
+  }
 }
 
 export default async (request) => {
@@ -135,7 +337,8 @@ export default async (request) => {
 
   try {
     const store = getStore({
-      name: "liveservice-orders"
+      name: "liveservice-orders",
+      consistency: "strong"
     });
 
     const order = await store.get(
@@ -203,8 +406,7 @@ export default async (request) => {
     const invoiceAmount = Number(invoice.InvoiceValue);
 
     if (
-      String(invoice.InvoiceId) !==
-        String(order.invoiceId) ||
+      String(invoice.InvoiceId) !== String(order.invoiceId) ||
       invoice.CustomerReference !== orderId ||
       !Number.isFinite(invoiceAmount) ||
       Math.abs(invoiceAmount - order.amount) > 0.001
@@ -254,9 +456,7 @@ export default async (request) => {
     );
 
     if (!provider) {
-      if (
-        process.env.ESIM_ISSUANCE_ENABLED !== "true"
-      ) {
+      if (process.env.ESIM_ISSUANCE_ENABLED !== "true") {
         return page(
           503,
           "تم تأكيد السداد. إصدار الشريحة غير مفعّل حاليًا؛ تواصل مع الدعم ولا تعِد الدفع.",
@@ -425,8 +625,6 @@ export default async (request) => {
       ? sims[0]
       : null;
 
-    // دعم اسم الحقل الفعلي rspUrl
-    // مع إبقاء التوافق مع smdpAddress.
     const sim =
       rawSim && typeof rawSim === "object"
         ? {
@@ -468,13 +666,24 @@ export default async (request) => {
       { onlyIfNew: true }
     );
 
-    const download =
-      "/.netlify/functions/paymentcallback?" +
-      new URLSearchParams({
-        order: orderId,
-        paymentId,
-        download: "qr"
-      }).toString();
+    const resultUrl = new URL(
+      "/.netlify/functions/paymentcallback",
+      SITE_URL
+    );
+
+    resultUrl.searchParams.set("order", orderId);
+    resultUrl.searchParams.set("paymentId", paymentId);
+
+    const downloadUrl = new URL(resultUrl);
+    downloadUrl.searchParams.set("download", "qr");
+
+    const emailMessage = await sendDeliveryEmail({
+      store,
+      order,
+      sim,
+      resultUrl: resultUrl.toString(),
+      downloadUrl: downloadUrl.toString()
+    });
 
     return page(
       200,
@@ -491,7 +700,8 @@ export default async (request) => {
         <code>${escape(sim.iccid)}</code>
 
         <p>
-          <a class="button" href="${escape(download)}">
+          <a class="button"
+            href="${escape(downloadUrl.toString())}">
             تحميل ملف QR
           </a>
         </p>
@@ -508,16 +718,14 @@ export default async (request) => {
         <p>رمز التفعيل:</p>
         <code>${escape(sim.matchingId)}</code>
 
+        <p>${escape(emailMessage)}</p>
+
         <p>
           احفظ رابط هذه الصفحة وبيانات الشريحة
           في مكان خاص، ولا تشاركها مع الآخرين.
-          لم تُرسل رسالة بريد إلكتروني تلقائية.
         </p>
 
-        <p>
-          للدعم:
-          info@liveservice-sa.com
-        </p>
+        <p>للدعم: info@liveservice-sa.com</p>
       `
     );
   } catch {
