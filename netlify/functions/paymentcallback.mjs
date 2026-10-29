@@ -1,5 +1,6 @@
 import { getStore } from "@netlify/blobs";
 import nodemailer from "nodemailer";
+import QRCode from "qrcode";
 
 const SITE_URL = "https://liveservice-esim.netlify.app";
 
@@ -27,7 +28,7 @@ const headers = {
   "X-Content-Type-Options": "nosniff",
   "X-Robots-Tag": "noindex, nofollow",
   "Content-Security-Policy":
-    "default-src 'none'; style-src 'unsafe-inline'; " +
+    "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; " +
     "base-uri 'none'; frame-ancestors 'none'"
 };
 
@@ -104,7 +105,8 @@ async function sendDeliveryEmail({
   order,
   sim,
   resultUrl,
-  downloadUrl
+  downloadUrl,
+  imageUrl
 }) {
   const key = `email:${order.orderId}:${order.invoiceId}`;
   let transporter;
@@ -190,6 +192,13 @@ async function sendDeliveryEmail({
       `SM-DP+: ${sim.smdpAddress}`,
       `رمز التفعيل: ${sim.matchingId}`,
       "",
+      "فتح صورة QR وحفظها في الصور:",
+      imageUrl,
+      "",
+      "إضافة الشريحة على الآيفون:",
+      "اتصل بالواي فاي وافتح صورة QR المحفوظة في تطبيق الصور، ثم اضغط مطولًا على الرمز. إذا ظهر خيار إضافة eSIM، اضغط عليه واتبع التعليمات.",
+      "إذا لم يظهر الخيار: الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR ← إدخال التفاصيل يدويًا. استخدم عنوان SM-DP+ ورمز التفعيل الواردين في هذه الرسالة.",
+      "",
       "تحميل ملف QR المضغوط:",
       downloadUrl,
       "",
@@ -243,7 +252,10 @@ async function sendDeliveryEmail({
               </a>
             </p>
 
-            <p>افتح الملف المضغوط للوصول إلى صورة QR.</p>
+            <p><a href="${escape(imageUrl)}" style="display:inline-block;padding:12px 20px;background:#087f85;color:white;border-radius:10px;text-decoration:none">فتح وحفظ صورة QR</a></p>
+            <p>لحفظ الرمز: افتح الصورة ثم اضغط عليها مطولًا واختر «حفظ في الصور».</p>
+            <p><strong>إضافة الشريحة على الآيفون:</strong> اتصل بالواي فاي، وافتح صورة QR من تطبيق «الصور»، ثم اضغط مطولًا على الرمز. إذا ظهر خيار «إضافة eSIM»، اضغط عليه واتبع التعليمات.</p>
+            <p>إذا لم يظهر الخيار: الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR ← إدخال التفاصيل يدويًا. انسخ عنوان SM-DP+ ورمز التفعيل الموضحين أدناه.</p>
             <p>وللتثبيت اليدوي استخدم البيانات التالية:</p>
 
             <p>عنوان SM-DP+:</p>
@@ -655,6 +667,21 @@ export default async (request) => {
       );
     }
 
+    // Generate only after payment and assignment validation above.
+    if (url.searchParams.get("download") === "image") {
+      const image = await QRCode.toBuffer(
+        `LPA:1$${sim.smdpAddress}$${sim.matchingId}`,
+        { type: "png", width: 1024, margin: 4, errorCorrectionLevel: "M" }
+      );
+      return new Response(new Uint8Array(image), {
+        headers: {
+          ...headers,
+          "Content-Type": "image/png",
+          "Content-Disposition": `inline; filename="LiveService-${orderId}.png"`
+        }
+      });
+    }
+
     await store.setJSON(
       `delivery:${orderId}:${order.invoiceId}`,
       {
@@ -677,12 +704,16 @@ export default async (request) => {
     const downloadUrl = new URL(resultUrl);
     downloadUrl.searchParams.set("download", "qr");
 
+    const imageUrl = new URL(resultUrl);
+    imageUrl.searchParams.set("download", "image");
+
     const emailMessage = await sendDeliveryEmail({
       store,
       order,
       sim,
       resultUrl: resultUrl.toString(),
-      downloadUrl: downloadUrl.toString()
+      downloadUrl: downloadUrl.toString(),
+      imageUrl: imageUrl.toString()
     });
 
     return page(
@@ -706,8 +737,17 @@ export default async (request) => {
           </a>
         </p>
 
+        <p><a class="button" href="${escape(imageUrl.toString())}">فتح وحفظ صورة QR</a></p>
+        <p>لحفظ الرمز في الاستوديو: افتح الصورة، ثم اضغط عليها مطولًا واختر «حفظ في الصور».</p>
+        <h2>إضافة الشريحة على الآيفون</h2>
+        <ol>
+          <li>اتصل بالواي فاي وافتح تطبيق «الصور».</li>
+          <li>افتح صورة QR المحفوظة واضغط مطولًا على الرمز.</li>
+          <li>إذا ظهر خيار «إضافة eSIM»، اضغط عليه واتبع تعليمات التثبيت.</li>
+        </ol>
+        <p>إذا لم يظهر الخيار: الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR ← إدخال التفاصيل يدويًا. انسخ عنوان SM-DP+ ورمز التفعيل الموضحين أدناه.</p>
         <p>
-          افتح الملف المضغوط للوصول إلى صورة QR.
+          ويمكنك فتح الملف المضغوط للوصول إلى صورة QR.
           وللتثبيت اليدوي استخدم البيانات التالية
           في إعدادات إضافة eSIM:
         </p>
