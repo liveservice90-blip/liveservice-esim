@@ -32,6 +32,31 @@ const headers = {
     "base-uri 'none'; frame-ancestors 'none'"
 };
 
+function giftCard(order) {
+  if (!order.gift) return "";
+
+  return `
+    <section style="
+      padding:24px;
+      background:#fffbf1;
+      border:1px solid #dca747;
+      border-radius:16px;
+      margin:20px 0;
+    ">
+      <h2>🎁 هدية إنترنت لك</h2>
+      <p>إلى: ${escape(order.gift.recipientName)}</p>
+      <p>من: ${escape(order.customerName)}</p>
+      <p>الباقة: ${escape(
+        order.description || order.bundleName
+      )}</p>
+      <p style="white-space:pre-wrap">${escape(
+        order.gift.message
+      )}</p>
+      <p>مع أطيب الأمنيات برحلة سعيدة — خدمة مباشرة</p>
+    </section>
+  `;
+}
+
 function page(status, message, extra = "") {
   return new Response(
     `<!doctype html>
@@ -98,8 +123,7 @@ function page(status, message, extra = "") {
 }
 
 // فشل البريد لا يمنع ظهور بيانات الشريحة.
-// لا نعيد المحاولة تلقائيًا بعد بدء الإرسال، لأن انقطاع
-// الاتصال قد يحدث بعد قبول خادم البريد للرسالة.
+// لا نعيد المحاولة تلقائيًا بعد بدء الإرسال.
 async function sendDeliveryEmail({
   store,
   order,
@@ -108,6 +132,16 @@ async function sendDeliveryEmail({
   downloadUrl,
   imageUrl
 }) {
+  const recipientEmail =
+    order.gift?.delivery === "email"
+      ? order.gift.recipientEmail
+      : order.customerEmail;
+
+  const recipientName =
+    order.gift?.delivery === "email"
+      ? order.gift.recipientName
+      : order.customerName;
+
   const key = `email:${order.orderId}:${order.invoiceId}`;
   let transporter;
 
@@ -136,7 +170,7 @@ async function sendDeliveryEmail({
       !user ||
       !pass ||
       !validEmail(from) ||
-      !validEmail(order.customerEmail)
+      !validEmail(recipientEmail)
     ) {
       return "بيانات الشريحة جاهزة هنا، لكن إعدادات إرسال البريد أو عنوان المستلم غير مكتملة.";
     }
@@ -181,8 +215,15 @@ async function sendDeliveryEmail({
     const text = [
       "LiveService eSIM",
       "",
-      `مرحبًا ${order.customerName || "بك"}،`,
+      `مرحبًا ${recipientName || "بك"}،`,
       "تم تأكيد السداد وبيانات شريحتك جاهزة.",
+      ...(order.gift
+        ? [
+            `هدية إلى: ${order.gift.recipientName}`,
+            `من: ${order.customerName}`,
+            order.gift.message
+          ]
+        : []),
       "",
       `رقم الطلب: ${order.orderId}`,
       `الباقة: ${description}`,
@@ -217,23 +258,38 @@ async function sendDeliveryEmail({
         address: from
       },
       to: {
-        address: order.customerEmail.trim()
+        address: recipientEmail.trim()
       },
-      subject: "بيانات شريحتك الإلكترونية | LiveService eSIM",
+      subject: order.gift
+        ? "وصلتك هدية إنترنت | LiveService eSIM"
+        : "بيانات شريحتك الإلكترونية | LiveService eSIM",
       messageId:
         `<esim-${order.orderId}-${order.invoiceId}@liveservice-sa.com>`,
       text,
       html: `
         <!doctype html>
         <html lang="ar" dir="rtl">
-        <body style="margin:0;padding:20px;background:#f5f8f8;
-          font-family:Tahoma,Arial;color:#183b41">
-          <main style="max-width:620px;margin:auto;padding:24px;
-            background:white;border-radius:16px;line-height:2;
-            overflow-wrap:anywhere">
+        <body style="
+          margin:0;
+          padding:20px;
+          background:#f5f8f8;
+          font-family:Tahoma,Arial;
+          color:#183b41;
+        ">
+          <main style="
+            max-width:620px;
+            margin:auto;
+            padding:24px;
+            background:white;
+            border-radius:16px;
+            line-height:2;
+            overflow-wrap:anywhere;
+          ">
             <h1 style="color:#087f85">LiveService eSIM</h1>
-            <p>مرحبًا ${escape(order.customerName || "بك")}،</p>
+            <p>مرحبًا ${escape(recipientName || "بك")}،</p>
             <p>تم تأكيد السداد وبيانات شريحتك جاهزة.</p>
+
+            ${giftCard(order)}
 
             <p>رقم الطلب:</p>
             <p dir="ltr">${escape(order.orderId)}</p>
@@ -245,17 +301,52 @@ async function sendDeliveryEmail({
 
             <p>
               <a href="${escape(downloadUrl)}"
-                style="display:inline-block;padding:12px 20px;
-                background:#087f85;color:white;border-radius:10px;
-                text-decoration:none">
+                style="
+                  display:inline-block;
+                  padding:12px 20px;
+                  background:#087f85;
+                  color:white;
+                  border-radius:10px;
+                  text-decoration:none;
+                ">
                 تحميل ملف QR
               </a>
             </p>
 
-            <p><a href="${escape(imageUrl)}" style="display:inline-block;padding:12px 20px;background:#087f85;color:white;border-radius:10px;text-decoration:none">فتح وحفظ صورة QR</a></p>
-            <p>لحفظ الرمز: افتح الصورة ثم اضغط عليها مطولًا واختر «حفظ في الصور».</p>
-            <p><strong>إضافة الشريحة على الآيفون:</strong> اتصل بالواي فاي، وافتح صورة QR من تطبيق «الصور»، ثم اضغط مطولًا على الرمز. إذا ظهر خيار «إضافة eSIM»، اضغط عليه واتبع التعليمات.</p>
-            <p>إذا لم يظهر الخيار: الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR ← إدخال التفاصيل يدويًا. انسخ عنوان SM-DP+ ورمز التفعيل الموضحين أدناه.</p>
+            <p>
+              <a href="${escape(imageUrl)}"
+                style="
+                  display:inline-block;
+                  padding:12px 20px;
+                  background:#087f85;
+                  color:white;
+                  border-radius:10px;
+                  text-decoration:none;
+                ">
+                فتح وحفظ صورة QR
+              </a>
+            </p>
+
+            <p>
+              لحفظ الرمز: افتح الصورة ثم اضغط عليها
+              مطولًا واختر «حفظ في الصور».
+            </p>
+
+            <p>
+              <strong>إضافة الشريحة على الآيفون:</strong>
+              اتصل بالواي فاي، وافتح صورة QR من تطبيق
+              «الصور»، ثم اضغط مطولًا على الرمز.
+              إذا ظهر خيار «إضافة eSIM»، اضغط عليه
+              واتبع التعليمات.
+            </p>
+
+            <p>
+              إذا لم يظهر الخيار:
+              الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR
+              ← إدخال التفاصيل يدويًا.
+              انسخ عنوان SM-DP+ ورمز التفعيل الموضحين أدناه.
+            </p>
+
             <p>وللتثبيت اليدوي استخدم البيانات التالية:</p>
 
             <p>عنوان SM-DP+:</p>
@@ -282,7 +373,10 @@ async function sendDeliveryEmail({
       `
     });
 
-    if (!Array.isArray(info.accepted) || !info.accepted.length) {
+    if (
+      !Array.isArray(info.accepted) ||
+      !info.accepted.length
+    ) {
       throw new Error("SMTP did not accept recipient");
     }
 
@@ -296,7 +390,6 @@ async function sendDeliveryEmail({
     return "قبل خادم البريد رسالة بيانات الشريحة. تحقق من الوارد والبريد غير المرغوب فيه.";
   } catch {
     // نحتفظ بالحجز لمنع تكرار الرسالة عند تحديث الصفحة.
-    // إذا انقطع الاتصال بعد الإرسال، قد تكون الرسالة وصلت.
     return "تعذر تأكيد إرسال البريد. بيانات شريحتك متاحة هنا؛ احفظها وتواصل مع الدعم إذا لم تصلك الرسالة.";
   } finally {
     if (transporter) {
@@ -477,7 +570,6 @@ export default async (request) => {
       }
 
       // حجز دائم لمنع تكرار شراء الشريحة.
-      // لا يُحذف عند انقطاع الاتصال.
       const claim = await store.setJSON(
         `issuance:${orderId}:${order.invoiceId}`,
         {
@@ -667,17 +759,24 @@ export default async (request) => {
       );
     }
 
-    // Generate only after payment and assignment validation above.
+    // توليد صورة QR بعد التحقق من الدفع وبيانات الشريحة.
     if (url.searchParams.get("download") === "image") {
       const image = await QRCode.toBuffer(
         `LPA:1$${sim.smdpAddress}$${sim.matchingId}`,
-        { type: "png", width: 1024, margin: 4, errorCorrectionLevel: "M" }
+        {
+          type: "png",
+          width: 1024,
+          margin: 4,
+          errorCorrectionLevel: "M"
+        }
       );
+
       return new Response(new Uint8Array(image), {
         headers: {
           ...headers,
           "Content-Type": "image/png",
-          "Content-Disposition": `inline; filename="LiveService-${orderId}.png"`
+          "Content-Disposition":
+            `inline; filename="LiveService-${orderId}.png"`
         }
       });
     }
@@ -721,6 +820,7 @@ export default async (request) => {
       "تم تأكيد سداد طلبك، وبيانات تثبيت شريحتك جاهزة.",
       `
         ${orderNote}
+        ${giftCard(order)}
 
         <p>
           الباقة:
@@ -737,15 +837,37 @@ export default async (request) => {
           </a>
         </p>
 
-        <p><a class="button" href="${escape(imageUrl.toString())}">فتح وحفظ صورة QR</a></p>
-        <p>لحفظ الرمز في الاستوديو: افتح الصورة، ثم اضغط عليها مطولًا واختر «حفظ في الصور».</p>
+        <p>
+          <a class="button"
+            href="${escape(imageUrl.toString())}">
+            فتح وحفظ صورة QR
+          </a>
+        </p>
+
+        <p>
+          لحفظ الرمز في الاستوديو:
+          افتح الصورة، ثم اضغط عليها مطولًا
+          واختر «حفظ في الصور».
+        </p>
+
         <h2>إضافة الشريحة على الجهاز</h2>
+
         <ol>
           <li>اتصل بالواي فاي وافتح تطبيق «الصور».</li>
           <li>افتح صورة QR المحفوظة واضغط مطولًا على الرمز.</li>
-          <li>إذا ظهر خيار «إضافة eSIM»، اضغط عليه واتبع تعليمات التثبيت.</li>
+          <li>
+            إذا ظهر خيار «إضافة eSIM»،
+            اضغط عليه واتبع تعليمات التثبيت.
+          </li>
         </ol>
-        <p>إذا لم يظهر الخيار: الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR ← إدخال التفاصيل يدويًا. انسخ عنوان SM-DP+ ورمز التفعيل الموضحين أدناه.</p>
+
+        <p>
+          إذا لم يظهر الخيار:
+          الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR
+          ← إدخال التفاصيل يدويًا.
+          انسخ عنوان SM-DP+ ورمز التفعيل الموضحين أدناه.
+        </p>
+
         <p>
           ويمكنك فتح الملف المضغوط للوصول إلى صورة QR.
           وللتثبيت اليدوي استخدم البيانات التالية
