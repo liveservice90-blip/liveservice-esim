@@ -1,3 +1,4 @@
+import { parseGift } from "./gift.mjs";
 import { getStore } from "@netlify/blobs";
 import { randomUUID } from "node:crypto";
 import catalogue from "./catalogue.js";
@@ -21,7 +22,6 @@ export default async (request) => {
     });
   }
 
-  // يبقى إنشاء الفواتير مغلقًا حتى اكتمال تسليم الشريحة.
   if (process.env.PAYMENTS_ENABLED !== "true") {
     return reply(503, {
       error: "الدفع غير مفعّل بعد"
@@ -94,6 +94,16 @@ export default async (request) => {
     });
   }
 
+  let gift;
+
+  try {
+    gift = parseGift(input.gift);
+  } catch (error) {
+    return reply(400, {
+      error: error.message
+    });
+  }
+
   try {
     // السعر يؤخذ من الخادم ولا يؤخذ من المتصفح.
     const catalogueResponse = await catalogue.handler({
@@ -146,6 +156,7 @@ export default async (request) => {
       currency: "SAR",
       customerName,
       customerEmail,
+      gift,
       createdAt: new Date().toISOString()
     };
 
