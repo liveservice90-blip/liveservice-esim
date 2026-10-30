@@ -33,6 +33,7 @@ function page(status, body) {
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
+
   <meta name="viewport"
     content="width=device-width,initial-scale=1">
 
@@ -89,11 +90,28 @@ function page(status, body) {
     p {
       overflow-wrap: anywhere;
     }
+
+    .back-button {
+      display: block;
+      margin-top: 24px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #087f85;
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+    }
   </style>
 </head>
 
 <body>
-  <main>${body}</main>
+  <main>
+    ${body}
+
+    <a class="back-button" href="/">
+      الرجوع إلى الموقع
+    </a>
+  </main>
 </body>
 </html>`,
     {
@@ -162,7 +180,9 @@ export default async request => {
           <h2>🎁 هدية إنترنت لك</h2>
 
           <p>إلى: ${escape(gift.recipientName)}</p>
+
           <p>من: ${escape(gift.senderName)}</p>
+
           <p>الباقة: ${escape(gift.bundle)}</p>
 
           <p style="white-space:pre-wrap">${escape(gift.message)}</p>
@@ -199,9 +219,11 @@ export default async request => {
         </p>
 
         <p>عنوان SM-DP+:</p>
+
         <code>${escape(gift.smdpAddress)}</code>
 
         <p>رمز التفعيل:</p>
+
         <code>${escape(gift.matchingId)}</code>
 
         <p>
