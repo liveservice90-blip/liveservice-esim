@@ -1,6 +1,7 @@
 import { getStore } from "@netlify/blobs";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
+import { randomBytes, createHash } from "node:crypto";
 
 const SITE_URL = "https://liveservice-esim.netlify.app";
 
@@ -41,17 +42,13 @@ function giftCard(order) {
       background:#fffbf1;
       border:1px solid #dca747;
       border-radius:16px;
-      margin:20px 0;
+      margin:20px 0
     ">
       <h2>🎁 هدية إنترنت لك</h2>
       <p>إلى: ${escape(order.gift.recipientName)}</p>
       <p>من: ${escape(order.customerName)}</p>
-      <p>الباقة: ${escape(
-        order.description || order.bundleName
-      )}</p>
-      <p style="white-space:pre-wrap">${escape(
-        order.gift.message
-      )}</p>
+      <p>الباقة: ${escape(order.description || order.bundleName)}</p>
+      <p style="white-space:pre-wrap">${escape(order.gift.message)}</p>
       <p>مع أطيب الأمنيات برحلة سعيدة — خدمة مباشرة</p>
     </section>
   `;
@@ -83,7 +80,9 @@ function page(status, message, extra = "") {
       line-height: 2;
       overflow-wrap: anywhere;
     }
-    a { color: #087f85; }
+    a {
+      color: #087f85;
+    }
     .button {
       display: inline-block;
       padding: 12px 20px;
@@ -274,7 +273,7 @@ async function sendDeliveryEmail({
           padding:20px;
           background:#f5f8f8;
           font-family:Tahoma,Arial;
-          color:#183b41;
+          color:#183b41
         ">
           <main style="
             max-width:620px;
@@ -283,9 +282,10 @@ async function sendDeliveryEmail({
             background:white;
             border-radius:16px;
             line-height:2;
-            overflow-wrap:anywhere;
+            overflow-wrap:anywhere
           ">
             <h1 style="color:#087f85">LiveService eSIM</h1>
+
             <p>مرحبًا ${escape(recipientName || "بك")}،</p>
             <p>تم تأكيد السداد وبيانات شريحتك جاهزة.</p>
 
@@ -307,7 +307,7 @@ async function sendDeliveryEmail({
                   background:#087f85;
                   color:white;
                   border-radius:10px;
-                  text-decoration:none;
+                  text-decoration:none
                 ">
                 تحميل ملف QR
               </a>
@@ -321,23 +321,22 @@ async function sendDeliveryEmail({
                   background:#087f85;
                   color:white;
                   border-radius:10px;
-                  text-decoration:none;
+                  text-decoration:none
                 ">
                 فتح وحفظ صورة QR
               </a>
             </p>
 
             <p>
-              لحفظ الرمز: افتح الصورة ثم اضغط عليها
-              مطولًا واختر «حفظ في الصور».
+              لحفظ الرمز: افتح الصورة ثم اضغط عليها مطولًا
+              واختر «حفظ في الصور».
             </p>
 
             <p>
               <strong>إضافة الشريحة على الآيفون:</strong>
-              اتصل بالواي فاي، وافتح صورة QR من تطبيق
-              «الصور»، ثم اضغط مطولًا على الرمز.
-              إذا ظهر خيار «إضافة eSIM»، اضغط عليه
-              واتبع التعليمات.
+              اتصل بالواي فاي، وافتح صورة QR من تطبيق «الصور»،
+              ثم اضغط مطولًا على الرمز.
+              إذا ظهر خيار «إضافة eSIM»، اضغط عليه واتبع التعليمات.
             </p>
 
             <p>
@@ -373,10 +372,7 @@ async function sendDeliveryEmail({
       `
     });
 
-    if (
-      !Array.isArray(info.accepted) ||
-      !info.accepted.length
-    ) {
+    if (!Array.isArray(info.accepted) || !info.accepted.length) {
       throw new Error("SMTP did not accept recipient");
     }
 
@@ -389,7 +385,6 @@ async function sendDeliveryEmail({
 
     return "قبل خادم البريد رسالة بيانات الشريحة. تحقق من الوارد والبريد غير المرغوب فيه.";
   } catch {
-    // نحتفظ بالحجز لمنع تكرار الرسالة عند تحديث الصفحة.
     return "تعذر تأكيد إرسال البريد. بيانات شريحتك متاحة هنا؛ احفظها وتواصل مع الدعم إذا لم تصلك الرسالة.";
   } finally {
     if (transporter) {
@@ -398,7 +393,7 @@ async function sendDeliveryEmail({
   }
 }
 
-export default async (request) => {
+export default async request => {
   if (request.method !== "GET") {
     return page(405, "طريقة الطلب غير مسموحة.");
   }
@@ -570,6 +565,7 @@ export default async (request) => {
       }
 
       // حجز دائم لمنع تكرار شراء الشريحة.
+      // لا يُحذف عند انقطاع الاتصال.
       const claim = await store.setJSON(
         `issuance:${orderId}:${order.invoiceId}`,
         {
@@ -759,7 +755,6 @@ export default async (request) => {
       );
     }
 
-    // توليد صورة QR بعد التحقق من الدفع وبيانات الشريحة.
     if (url.searchParams.get("download") === "image") {
       const image = await QRCode.toBuffer(
         `LPA:1$${sim.smdpAddress}$${sim.matchingId}`,
@@ -806,6 +801,87 @@ export default async (request) => {
     const imageUrl = new URL(resultUrl);
     imageUrl.searchParams.set("download", "image");
 
+    let giftShare = "";
+
+    if (order.gift) {
+      const tokenKey = `gift-share-token:${orderId}`;
+
+      await store.setJSON(
+        tokenKey,
+        {
+          token: randomBytes(32).toString("hex")
+        },
+        { onlyIfNew: true }
+      );
+
+      const saved = await store.get(
+        tokenKey,
+        { type: "json" }
+      );
+
+      if (!/^[a-f0-9]{64}$/.test(saved?.token || "")) {
+        throw new Error("Gift link unavailable");
+      }
+
+      const digest = createHash("sha256")
+        .update(saved.token)
+        .digest("hex");
+
+      await store.setJSON(`gift-share:${digest}`, {
+        recipientName: order.gift.recipientName,
+        senderName: order.customerName,
+        message: order.gift.message,
+        bundle: order.description || order.bundleName,
+        smdpAddress: sim.smdpAddress,
+        matchingId: sim.matchingId
+      });
+
+      const giftUrl = new URL(
+        "/.netlify/functions/giftview",
+        SITE_URL
+      );
+
+      giftUrl.searchParams.set("token", saved.token);
+
+      const text = [
+        "🎁 هدية إنترنت لك من خدمة مباشرة",
+        `إلى: ${order.gift.recipientName}`,
+        `من: ${order.customerName}`,
+        `الباقة: ${order.description || order.bundleName}`,
+        order.gift.message,
+        "افتح هديتك والباركود وطريقة التثبيت:",
+        giftUrl.toString()
+      ].filter(Boolean).join("\n");
+
+      const whatsapp =
+        "https://wa.me/?text=" +
+        encodeURIComponent(text);
+
+      giftShare = `
+        <section>
+          <p>
+            <a class="button"
+              href="${escape(whatsapp)}"
+              target="_blank"
+              rel="noopener noreferrer">
+              مشاركة الهدية عبر واتساب 🎁
+            </a>
+          </p>
+
+          <p>
+            <a href="${escape(giftUrl.toString())}">
+              فتح الهدية كاملة
+            </a>
+          </p>
+
+          <p>
+            أرسل الرابط للمهدى إليه فقط؛
+            فهو يتيح تثبيت الشريحة.
+          </p>
+        </section>
+      `;
+    }
+
     const emailMessage = await sendDeliveryEmail({
       store,
       order,
@@ -821,6 +897,7 @@ export default async (request) => {
       `
         ${orderNote}
         ${giftCard(order)}
+        ${giftShare}
 
         <p>
           الباقة:
@@ -854,7 +931,10 @@ export default async (request) => {
 
         <ol>
           <li>اتصل بالواي فاي وافتح تطبيق «الصور».</li>
-          <li>افتح صورة QR المحفوظة واضغط مطولًا على الرمز.</li>
+          <li>
+            افتح صورة QR المحفوظة
+            واضغط مطولًا على الرمز.
+          </li>
           <li>
             إذا ظهر خيار «إضافة eSIM»،
             اضغط عليه واتبع تعليمات التثبيت.
@@ -863,8 +943,8 @@ export default async (request) => {
 
         <p>
           إذا لم يظهر الخيار:
-          الإعدادات ← خلوي ← إضافة eSIM ← استخدام رمز QR
-          ← إدخال التفاصيل يدويًا.
+          الإعدادات ← خلوي ← إضافة eSIM
+          ← استخدام رمز QR ← إدخال التفاصيل يدويًا.
           انسخ عنوان SM-DP+ ورمز التفعيل الموضحين أدناه.
         </p>
 
