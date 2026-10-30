@@ -838,7 +838,6 @@
     });
   }
   addBack(start.parentElement);
-  addBack(fields, fields.querySelector("legend").nextSibling);
   gift.addEventListener("change", sync);
   start.addEventListener("click", sync);
   new MutationObserver(sync).observe(cancel, {
