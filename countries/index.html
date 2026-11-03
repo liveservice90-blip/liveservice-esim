@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>جميع دول شرائح النت | LiveService eSIM</title>
+<meta name="description" content="استعرض وجهات شرائح النت المتاحة من LiveService eSIM واختر الدولة لعرض باقاتها وأسعارها الحالية.">
+<link rel="canonical" href="https://liveservice-esim.netlify.app/countries/">
+<style>
+body{margin:0;background:#f5f8f8;color:#183b41;font:18px Tahoma,Arial}
+main{max-width:900px;margin:auto;padding:24px}
+a{color:#087f85}
+header{display:flex;justify-content:space-between;align-items:center;gap:20px}
+header img{width:150px;height:auto}
+.panel{background:white;padding:24px;border-radius:22px;margin:24px 0;line-height:1.9}
+.country-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+button{font:inherit;padding:14px;border:1px solid #d4e3e3;background:white;border-radius:12px;color:#183b41;cursor:pointer}
+h1{color:#4833b7}
+nav{display:flex;gap:15px;flex-wrap:wrap}
+input{box-sizing:border-box;font:inherit;width:100%;padding:14px;margin:16px 0;border:1px solid #d4e3e3;border-radius:12px}
+</style>
+</head>
+<body>
+<main>
+<header>
+<a href="/"><img src="/assets/liveservice-logo.png" alt="خدمة مباشرة"></a>
+<a href="/">الرئيسية</a>
+</header>
+
+<section class="panel">
+<h1>جميع وجهات شرائح النت</h1>
+<p>القائمة التالية تُحمّل من الباقات المتاحة في المتجر. اضغط الدولة لعرض باقاتها وأسعارها الحالية.</p>
+<label for="filter">ابحث باسم الدولة</label>
+<input id="filter" type="search" placeholder="اكتب اسم الدولة">
+<p id="status" role="status">جارٍ تحميل الدول…</p>
+<div id="countries" class="country-list"></div>
+<button id="retry" hidden>إعادة المحاولة</button>
+</section>
+
+<section class="panel">
+<h2>وجهات مختارة</h2>
+<nav>
+<a href="/destinations/turkey/">شرائح نت تركيا</a>
+<a href="/destinations/saudi-arabia/">شرائح نت السعودية</a>
+<a href="/destinations/egypt/">شرائح نت مصر</a>
+<a href="/destinations/uae/">شرائح نت الإمارات</a>
+</nav>
+</section>
+<a href="/">العودة للمتجر</a>
+</main>
+
+<script>
+let rows = [];
+const box = document.getElementById('countries');
+const statusText = document.getElementById('status');
+const filter = document.getElementById('filter');
+const retry = document.getElementById('retry');
+
+function render() {
+  box.replaceChildren();
+  let count = 0;
+  for (const [iso, name] of rows) {
+    if (!name.includes(filter.value.trim())) continue;
+    count++;
+    const button = document.createElement('button');
+    button.textContent = name;
+    button.onclick = () => {
+      location.href = '/?country=' + encodeURIComponent(iso) + '#plans';
+    };
+    box.append(button);
+  }
+  statusText.textContent = count
+    ? 'عدد الدول: ' + count
+    : 'لا توجد دول مطابقة';
+}
+
+async function load() {
+  retry.hidden = true;
+  statusText.textContent = 'جارٍ تحميل الدول…';
+  try {
+    const response = await fetch('/.netlify/functions/catalogue');
+    const data = await response.json();
+    if (!response.ok || !Array.isArray(data.bundles)) {
+      throw new Error('تعذر تحميل الباقات');
+    }
+    const names = new Intl.DisplayNames(['ar'], {type: 'region'});
+    const countries = new Map();
+    data.bundles.forEach(bundle => {
+      (bundle.countries || []).forEach(country => {
+        if (/^[A-Z]{2}$/.test(country.iso)) {
+          countries.set(
+            country.iso,
+            names.of(country.iso) || country.name || country.iso
+          );
+        }
+      });
+    });
+    rows = [...countries].sort((a, b) => a[1].localeCompare(b[1], 'ar'));
+    render();
+  } catch (error) {
+    statusText.textContent = 'تعذر تحميل الدول. حاول مجددًا أو ابحث عن وجهتك من الصفحة الرئيسية.';
+    retry.hidden = false;
+  }
+}
+
+filter.oninput = render;
+retry.onclick = load;
+load();
+</script>
+</body>
+</html>
