@@ -1068,21 +1068,30 @@ get("search-form").addEventListener("submit", async event => {
     }
     await loading;
 
-    const matches = bundles.filter(bundle =>
-      (bundle.countries || []).some(item =>
-        [
-          item.name,
-          item.iso,
-          ...Object.values(regionNames).map(names => {
-            try {
-              return names.of(item.iso);
-            } catch {
-              return item.name;
-            }
-          })
-        ].some(name => normalize(name).includes(query))
-      )
+    const isCountryCode = /^[a-z]{2}$/i.test(query);
+
+const matches = bundles.filter(bundle =>
+  (bundle.countries || []).some(item => {
+    if (isCountryCode) {
+      return normalize(item.iso) === query;
+    }
+
+    const names = [
+      item.name,
+      ...Object.values(regionNames).map(names => {
+        try {
+          return names.of(item.iso);
+        } catch {
+          return item.name;
+        }
+      })
+    ];
+
+    return names.some(name =>
+      normalize(name).includes(query)
     );
+  })
+);
 
     textBindings.delete(result);
     result.replaceChildren();
