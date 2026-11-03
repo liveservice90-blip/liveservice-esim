@@ -1,1 +1,33 @@
-<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://liveservice-esim.netlify.app/</loc></url><url><loc>https://liveservice-esim.netlify.app/countries/</loc></url><url><loc>https://liveservice-esim.netlify.app/destinations/turkey/</loc></url><url><loc>https://liveservice-esim.netlify.app/destinations/saudi-arabia/</loc></url><url><loc>https://liveservice-esim.netlify.app/destinations/egypt/</loc></url><url><loc>https://liveservice-esim.netlify.app/destinations/uae/</loc></url></urlset>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://liveservice-esim.netlify.app/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/countries/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/turkey/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/saudi-arabia/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/egypt/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/uae/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/morocco/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/thailand/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/indonesia/</loc>
+  </url>
+  <url>
+    <loc>https://liveservice-esim.netlify.app/destinations/bosnia/</loc>
+  </url>
+</urlset>
