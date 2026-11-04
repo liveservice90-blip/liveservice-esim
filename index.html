@@ -1313,6 +1313,32 @@ function createCard(bundle){
     card.append(title,details,price,button,status);
   }
 
+  const coveredCountries = Array.isArray(bundle.countries)
+    ? bundle.countries.filter(item => item && (item.iso || item.name))
+    : [];
+
+  if (coveredCountries.length) {
+    const coverage = document.createElement("details");
+    const heading = document.createElement("summary");
+    const names = document.createElement("p");
+
+    const labels = {
+      ar: "الدول المشمولة بالتغطية",
+      en: "Covered countries",
+      tr: "Kapsanan ülkeler",
+      ur: "کوریج والے ممالک"
+    };
+
+    setText(heading, () => labels[lang]);
+    setText(names, () => {
+      const countryLabels = [...new Set(coveredCountries.map(countryName))];
+      return countryLabels.join(lang === "ar" || lang === "ur" ? "، " : ", ");
+    });
+
+    coverage.append(heading, names);
+    button.before(coverage);
+  }
+
   return card;
 }
 
