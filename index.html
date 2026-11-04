@@ -482,31 +482,30 @@ footer {
   font-weight: 800;
 }
 #checkout-panel h2 {
-  font-size: clamp(25px, 4vw, 32px);
+  font-size: clamp(26px, 5vw, 34px);
   font-weight: 800;
 }
 #checkout-panel #selected-name,
 #checkout-panel .muted,
 #checkout-panel label,
 #checkout-panel legend,
-#checkout-panel .notice {
-  color: #123a3e;
-  font-size: 18px;
-  line-height: 1.8;
-}
-#checkout-panel #selected-name,
-#checkout-panel .muted {
-  font-weight: 600;
-}
-#checkout-panel label,
-#checkout-panel legend {
+#checkout-panel .notice,
+#checkout-panel input:not([type="checkbox"]),
+#checkout-panel textarea,
+#checkout-panel select {
+  color: #102629;
+  font-size: 20px;
   font-weight: 700;
+  line-height: 1.65;
+}
+#checkout-panel #selected-price {
+  color: #043e43;
+  font-weight: 800;
 }
 #checkout-panel input:not([type="checkbox"]),
 #checkout-panel textarea,
 #checkout-panel select {
-  color: #123a3e;
-  font-size: 18px;
+  border-color: #658480;
 }
 </style>
 <link rel="stylesheet" href="/assets/esim-artwork.css">
