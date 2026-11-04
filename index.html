@@ -46,7 +46,7 @@ header{
 }
 #language{
   font:inherit;
-  border:1px solid #dcd7cc;
+  border:2px solid var(--teal);
   border-radius:16px;
   padding:11px 14px;
   background:#ffffffd9;
@@ -427,6 +427,31 @@ footer{
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .btn,.dest-card{transition:none}
+}
+/* Clearer hero typography */
+.hero .eyebrow {
+  color: #fff0cd;
+  font-size: clamp(19px, 3vw, 24px);
+  font-weight: 700;
+}
+.hero .brand {
+  font-size: clamp(24px, 4vw, 34px);
+}
+.hero h1 {
+  color: #fff0cd;
+  font-size: clamp(32px, 5.5vw, 51px);
+  font-weight: 800;
+  line-height: 1.4;
+}
+.hero .intro {
+  color: #fff;
+  font-size: clamp(17px, 3vw, 19px);
+  font-weight: 600;
+  line-height: 1.8;
+}
+.hero .btn {
+  font-size: 17px;
+  font-weight: 800;
 }
 </style>
 <link rel="stylesheet" href="/assets/esim-artwork.css">
