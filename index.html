@@ -1528,6 +1528,10 @@ get("search-form").addEventListener("submit",async event=>{
         setText(message,()=>durationLabels[lang][2]);
         cards.append(message);
       }else{
+        const displayPrice=bundle=>bundle.currency==="SAR"&&validAmount(bundle.salePrice)
+          ?bundle.salePrice
+          :Infinity;
+        filtered.sort((a,b)=>displayPrice(a)-displayPrice(b));
         filtered.forEach(bundle=>cards.append(createCard(bundle)));
       }
     }
