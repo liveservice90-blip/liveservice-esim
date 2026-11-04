@@ -1437,7 +1437,7 @@ get("search-form").addEventListener("submit",async event=>{
     }
 
     const count=document.createElement("p");
-    setText(count,()=>t("عدد الباقات: {count}",{count:matches.length}));
+    count.setAttribute("aria-live","polite");
     result.append(count);
 
     const filters=document.createElement("div");
@@ -1451,7 +1451,34 @@ get("search-form").addEventListener("submit",async event=>{
       ur:["تمام","محدود","لامحدود","اس قسم کا کوئی پیکیج دستیاب نہیں۔"]
     };
 
+    const durationLabel=document.createElement("label");
+    const durationCaption=document.createElement("span");
+    const durationSelect=document.createElement("select");
+    const durationLabels={
+      ar:["عدد الأيام","كل المدد","لا توجد باقات بهذه المدة والنوع."],
+      en:["Number of days","All durations","No plans match this duration and type."],
+      tr:["Gün sayısı","Tüm süreler","Bu süre ve türde paket bulunamadı."],
+      ur:["دنوں کی تعداد","تمام مدتیں","اس مدت اور قسم کا کوئی پیکیج دستیاب نہیں۔"]
+    };
+    setText(durationCaption,()=>durationLabels[lang][0]);
+    durationLabel.append(durationCaption,durationSelect);
+
+    const planDays=bundle=>(bundle.durationUnit ?? "day")==="day"
+      ?Number(bundle.duration):NaN;
+    const durations=[...new Set(matches.map(planDays))]
+      .filter(days=>Number.isInteger(days)&&days>0)
+      .sort((a,b)=>a-b);
+    const allDurations=new Option("","");
+    setText(allDurations,()=>durationLabels[lang][1]);
+    durationSelect.append(allDurations);
+    durations.forEach(days=>durationSelect.add(new Option(String(days),String(days))));
+    durationLabel.hidden=durations.length===0;
+
+    let selectedType="all";
+    durationSelect.onchange=()=>showPlans(selectedType);
+
     function showPlans(type){
+      selectedType=type;
       filters.querySelectorAll(".plan-filter").forEach(button=>{
         button.setAttribute(
           "aria-pressed",
@@ -1462,15 +1489,18 @@ get("search-form").addEventListener("submit",async event=>{
       cards.replaceChildren();
 
       const filtered=matches.filter(bundle=>
-        type==="all"||
+        (!durationSelect.value || planDays(bundle)===Number(durationSelect.value)) &&
+        (type==="all"||
         (type==="unlimited"
           ?bundle.unlimited===true
-          :bundle.unlimited===false)
+          :bundle.unlimited===false))
       );
+
+      setText(count,()=>t("عدد الباقات: {count}",{count:filtered.length}));
 
       if(!filtered.length){
         const message=document.createElement("p");
-        setText(message,()=>labels[lang][3]);
+        setText(message,()=>durationLabels[lang][2]);
         cards.append(message);
       }else{
         filtered.forEach(bundle=>cards.append(createCard(bundle)));
@@ -1487,7 +1517,7 @@ get("search-form").addEventListener("submit",async event=>{
       filters.append(button);
     });
 
-    result.append(filters,cards);
+    result.append(durationLabel,filters,cards);
     showPlans("all");
   }catch{
     setText(result,()=>t("تعذر تحميل الباقات. اضغط بحث للمحاولة مجددًا."));
