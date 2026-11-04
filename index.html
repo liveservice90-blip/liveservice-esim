@@ -1088,7 +1088,15 @@ const normalize=value=>String(value||"")
   .replace(/ة/g,"ه")
   .replace(/ى/g,"ي");
 
+const northernCyprusNames = {
+  ar: "شمال قبرص",
+  en: "Northern Cyprus",
+  tr: "Kuzey Kıbrıs",
+  ur: "شمالی قبرص"
+};
+
 function countryName(item){
+  if (item.iso === "CYP") return northernCyprusNames[lang] ?? northernCyprusNames.en;
   try{
     return regionNames[lang]?.of(item.iso)||item.name||item.iso;
   }catch{
@@ -1104,8 +1112,8 @@ function populateCountries(){
   const countries=new Map();
 
   bundles.forEach(bundle=>{
-    (bundle.countries||[]).forEach(item=>{
-      if(item.iso) countries.set(item.iso,countryName(item));
+    (bundle.coverageCountries ?? bundle.countries ?? []).forEach(item=>{
+      if(/^(?:[a-z]{2}|CYP)$/i.test(item?.iso ?? "")) countries.set(item.iso,countryName(item));
     });
   });
 
@@ -1345,7 +1353,7 @@ function createCard(bundle){
 
   const coverageCountries = bundle.coverageCountries ?? bundle.countries;
   const coveredCountries = Array.isArray(coverageCountries)
-    ? coverageCountries.filter(item => typeof item?.iso === "string" && /^[a-z]{2}$/i.test(item.iso))
+    ? coverageCountries.filter(item => typeof item?.iso === "string" && /^(?:[a-z]{2}|CYP)$/i.test(item.iso))
     : [];
 
   if (coveredCountries.length) {
@@ -1400,15 +1408,16 @@ get("search-form").addEventListener("submit",async event=>{
     }
     await loading;
 
-    const isCountryCode=/^[a-z]{2}$/i.test(query);
+    const isCountryCode=/^(?:[a-z]{2}|CYP)$/i.test(query);
 
     const matches=bundles.filter(bundle=>
       (bundle.coverageCountries ?? bundle.countries ?? []).some(item=>{
-        if (!/^[a-z]{2}$/i.test(item?.iso ?? "")) return false;
+        if (!/^(?:[a-z]{2}|CYP)$/i.test(item?.iso ?? "")) return false;
         if(isCountryCode) return normalize(item.iso)===query;
 
         const names=[
           item.name,
+          ...(item.iso === "CYP" ? Object.values(northernCyprusNames) : []),
           ...Object.values(regionNames).map(names=>{
             try{return names.of(item.iso)}
             catch{return item.name}
@@ -1691,7 +1700,7 @@ applyLanguage();
 syncGiftBack();
 
 const requestedCountry=new URLSearchParams(location.search).get("country");
-if(requestedCountry&&/^[a-z]{2}$/i.test(requestedCountry)){
+if(requestedCountry&&/^(?:[a-z]{2}|CYP)$/i.test(requestedCountry)){
   country.value=requestedCountry.toUpperCase();
   get("search-form").requestSubmit();
 }
