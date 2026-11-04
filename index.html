@@ -540,6 +540,30 @@ footer {
   font-size: 15px;
   line-height: 1.55;
 }
+
+.plan-duration-filter {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--deep);
+  font-weight: 700;
+}
+.plan-duration-filter select {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--teal);
+  border-radius: 14px;
+  background-color: #edf6f3;
+  color: var(--deep);
+  font: inherit;
+  cursor: pointer;
+}
+.plan-duration-filter select:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
+}
 </style>
 <link rel="stylesheet" href="/assets/esim-artwork.css">
 </head>
@@ -1454,6 +1478,7 @@ get("search-form").addEventListener("submit",async event=>{
     const durationLabel=document.createElement("label");
     const durationCaption=document.createElement("span");
     const durationSelect=document.createElement("select");
+    durationLabel.className="plan-duration-filter";
     const durationLabels={
       ar:["عدد الأيام","كل المدد","لا توجد باقات بهذه المدة والنوع."],
       en:["Number of days","All durations","No plans match this duration and type."],
