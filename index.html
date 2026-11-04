@@ -1313,8 +1313,9 @@ function createCard(bundle){
     card.append(title,details,price,button,status);
   }
 
-  const coveredCountries = Array.isArray(bundle.countries)
-    ? bundle.countries.filter(item => item && (item.iso || item.name))
+  const coverageCountries = bundle.coverageCountries ?? bundle.countries;
+  const coveredCountries = Array.isArray(coverageCountries)
+    ? coverageCountries.filter(item => typeof item?.iso === "string" && /^[a-z]{2}$/i.test(item.iso))
     : [];
 
   if (coveredCountries.length) {
