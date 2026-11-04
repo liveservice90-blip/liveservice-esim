@@ -507,6 +507,46 @@ footer {
 #checkout-panel select {
   border-color: #658480;
 }
+/* Plan coverage */
+.plan-coverage {
+  margin: 0 0 16px;
+  border: 1px solid #aac9c2;
+  border-radius: 14px;
+  background: #f2f8f5;
+  color: var(--deep);
+}
+.plan-coverage summary {
+  padding: 12px 14px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.plan-coverage summary:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+.plan-coverage[open] summary {
+  border-bottom: 1px solid #c8ded7;
+}
+.plan-coverage-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  list-style: none;
+}
+.plan-coverage-list li {
+  max-width: 100%;
+  padding: 5px 10px;
+  border: 1px solid #b9d6ce;
+  border-radius: 9px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.55;
+}
 </style>
 <link rel="stylesheet" href="/assets/esim-artwork.css">
 </head>
@@ -1321,7 +1361,15 @@ function createCard(bundle){
   if (coveredCountries.length) {
     const coverage = document.createElement("details");
     const heading = document.createElement("summary");
-    const names = document.createElement("p");
+    const names = document.createElement("ul");
+    coverage.className = "plan-coverage";
+    names.className = "plan-coverage-list";
+
+    const uniqueCountries = new Map();
+    for (const country of coveredCountries) {
+      const iso = country.iso.toUpperCase();
+      if (!uniqueCountries.has(iso)) uniqueCountries.set(iso, country);
+    }
 
     const labels = {
       ar: "الدول المشمولة بالتغطية",
@@ -1330,11 +1378,12 @@ function createCard(bundle){
       ur: "کوریج والے ممالک"
     };
 
-    setText(heading, () => labels[lang]);
-    setText(names, () => {
-      const countryLabels = [...new Set(coveredCountries.map(countryName))];
-      return countryLabels.join(lang === "ar" || lang === "ur" ? "، " : ", ");
-    });
+    setText(heading, () => `${labels[lang]} (${uniqueCountries.size.toLocaleString(lang)})`);
+    for (const country of uniqueCountries.values()) {
+      const name = document.createElement("li");
+      setText(name, () => countryName(country));
+      names.append(name);
+    }
 
     coverage.append(heading, names);
     button.before(coverage);
