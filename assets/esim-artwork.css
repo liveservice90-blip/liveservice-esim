@@ -1,0 +1,39 @@
+/* LiveService eSIM artwork */
+.hero > .esim-globe {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  margin: 0 auto 16px;
+}
+.dest-card .dest-art {
+  background-image: linear-gradient(0deg, #043e4380, transparent 70%), var(--destination-photo, none);
+  background-color: #043e43;
+  background-position: center;
+  background-size: cover;
+  min-height: 115px;
+  text-shadow: 0 2px 8px #000a;
+}
+.dest-card[href="/destinations/turkey/"] .dest-art {
+  --destination-photo: url("/assets/esim-turkey.webp");
+}
+.dest-card[href="/destinations/saudi-arabia/"] .dest-art {
+  --destination-photo: url("/assets/esim-saudi-arabia.webp");
+}
+.dest-card[href="/destinations/egypt/"] .dest-art {
+  --destination-photo: url("/assets/esim-egypt.webp");
+}
+.dest-card[href="/destinations/uae/"] .dest-art {
+  --destination-photo: url("/assets/esim-uae.webp");
+}
+.dest-card[href="/destinations/morocco/"] .dest-art {
+  --destination-photo: url("/assets/esim-morocco.webp");
+}
+.dest-card[href="/destinations/thailand/"] .dest-art {
+  --destination-photo: url("/assets/esim-thailand.webp");
+}
+.dest-card[href="/destinations/indonesia/"] .dest-art {
+  --destination-photo: url("/assets/esim-indonesia.webp");
+}
+.dest-card[href="/destinations/bosnia/"] .dest-art {
+  --destination-photo: url("/assets/esim-bosnia.webp");
+}
