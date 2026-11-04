@@ -125,11 +125,24 @@ exports.handler = async (event) => {
           throw new Error("Invalid sale price");
         }
 
-        const countries = Array.isArray(item.countries) ? item.countries : [];
-        const roamingCountries = Array.isArray(item.roamingEnabled) ? item.roamingEnabled : [];
+        const countries = Array.isArray(item.countries)
+          ? item.countries
+          : [];
+
+        const roamingCountries = Array.isArray(item.roamingEnabled)
+          ? item.roamingEnabled
+          : [];
+
         const coverageCountries = [...countries, ...roamingCountries]
-          .filter(country => typeof country?.iso === "string" && /^[a-z]{2}$/i.test(country.iso))
-          .map(({ iso, name }) => ({ iso: iso.toUpperCase(), name }));
+          .map(entry => entry?.country ?? entry)
+          .filter(country =>
+            typeof country?.iso === "string" &&
+            /^(?:[a-z]{2}|CYP)$/i.test(country.iso.trim())
+          )
+          .map(({ iso, name }) => ({
+            iso: iso.trim().toUpperCase(),
+            name
+          }));
 
         bundles.set(item.name, {
           name: item.name,
