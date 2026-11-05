@@ -1124,6 +1124,11 @@ const northernCyprusNames = {
   ur: "شمالی قبرص"
 };
 
+function isVisibleCountry(item){
+  const iso=item?.iso;
+  return typeof iso==="string" && /^(?:[a-z]{2}|CYP)$/i.test(iso) && iso.toUpperCase()!=="IL";
+}
+
 function countryName(item){
   if (item.iso === "CYP") return northernCyprusNames[lang] ?? northernCyprusNames.en;
   try{
@@ -1142,7 +1147,7 @@ function populateCountries(){
 
   bundles.forEach(bundle=>{
     (bundle.coverageCountries ?? bundle.countries ?? []).forEach(item=>{
-      if(/^(?:[a-z]{2}|CYP)$/i.test(item?.iso ?? "")) countries.set(item.iso,countryName(item));
+      if(isVisibleCountry(item)) countries.set(item.iso,countryName(item));
     });
   });
 
@@ -1382,7 +1387,7 @@ function createCard(bundle){
 
   const coverageCountries = bundle.coverageCountries ?? bundle.countries;
   const coveredCountries = Array.isArray(coverageCountries)
-    ? coverageCountries.filter(item => typeof item?.iso === "string" && /^(?:[a-z]{2}|CYP)$/i.test(item.iso))
+    ? coverageCountries.filter(isVisibleCountry)
     : [];
 
   if (coveredCountries.length) {
@@ -1441,7 +1446,7 @@ get("search-form").addEventListener("submit",async event=>{
 
     const matches=bundles.filter(bundle=>
       (bundle.coverageCountries ?? bundle.countries ?? []).some(item=>{
-        if (!/^(?:[a-z]{2}|CYP)$/i.test(item?.iso ?? "")) return false;
+        if (!isVisibleCountry(item)) return false;
         if(isCountryCode) return normalize(item.iso)===query;
 
         const names=[
