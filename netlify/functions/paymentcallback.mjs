@@ -393,6 +393,79 @@ async function sendDeliveryEmail({
   }
 }
 
+const usageNumber = new Intl.NumberFormat("ar-SA", {
+  maximumFractionDigits: 2
+});
+
+const expiryDate = new Intl.DateTimeFormat("ar-SA", {
+  calendar: "gregory",
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "Asia/Riyadh"
+});
+
+function formatData(bytes) {
+  if (bytes === 0) return "٠ ميغابايت";
+  if (bytes < 10000) return "أقل من ٠٫٠١ ميغابايت";
+  return bytes >= 1e9
+    ? `${usageNumber.format(bytes / 1e9)} غيغابايت`
+    : `${usageNumber.format(bytes / 1e6)} ميغابايت`;
+}
+
+async function bundleUsage({ iccid, bundleName, esimKey }) {
+  const unavailable = "<p>تعذر جلب تفاصيل الاستهلاك حاليًا. حاول التحديث بعد قليل.</p>";
+
+  try {
+    const url = new URL(
+      `https://api.esim-go.com/v2.5/esims/${encodeURIComponent(iccid)}/bundles`
+    );
+    url.searchParams.set("includeUsed", "true");
+    const response = await fetch(url, {
+      headers: { "X-API-Key": esimKey, Accept: "application/json" },
+      signal: AbortSignal.timeout(4000)
+    });
+    if (!response.ok) return unavailable;
+
+    const { bundles } = await response.json();
+    const assignments = bundles.find(bundle => bundle.name === bundleName)?.assignments;
+    const data = assignments?.filter(item =>
+      item.callTypeGroup?.toLowerCase() === "data"
+    );
+    if (!data?.length) return unavailable;
+
+    const assignment = data.find(item => ["active", "depleted"].includes(item.bundleState))
+      ?? data.find(item => item.bundleState === "expired")
+      ?? data[0];
+
+    if (["queued", "processing"].includes(assignment.bundleState)) {
+      return "<p>ستظهر تفاصيل الاستهلاك والانتهاء بعد بدء الباقة.</p>";
+    }
+
+    const { initialQuantity, remainingQuantity, endTime } = assignment;
+    const unlimited = assignment.unlimited === true || assignment.allowances?.some(
+      allowance => allowance.type === "DATA" && allowance.unlimited === true
+    );
+    const hasUsage = Number.isFinite(initialQuantity) &&
+      Number.isFinite(remainingQuantity) &&
+      initialQuantity > 0 && remainingQuantity >= 0 &&
+      remainingQuantity <= initialQuantity;
+    const expiresAt = typeof endTime === "string" ? Date.parse(endTime) : NaN;
+
+    return `
+      <dl>
+        <dt>البيانات المتبقية</dt>
+        <dd>${unlimited ? "غير محدودة" : hasUsage ? formatData(remainingQuantity) : "غير متاحة حاليًا"}</dd>
+        <dt>البيانات المستخدمة</dt>
+        <dd>${!unlimited && hasUsage ? formatData(initialQuantity - remainingQuantity) : "غير متاحة حاليًا"}</dd>
+        <dt>انتهاء صلاحية الباقة</dt>
+        <dd>${Number.isFinite(expiresAt) ? `${expiryDate.format(expiresAt)} بتوقيت السعودية` : "غير متاح حاليًا"}</dd>
+      </dl>
+    `;
+  } catch {
+    return unavailable;
+  }
+}
+
 export default async request => {
   if (request.method !== "GET") {
     return page(405, "طريقة الطلب غير مسموحة.");
@@ -891,6 +964,12 @@ export default async request => {
       imageUrl: imageUrl.toString()
     });
 
+    const usage = await bundleUsage({
+      iccid: sim.iccid,
+      bundleName: order.bundleName,
+      esimKey
+    });
+
     return page(
       200,
       "تم تأكيد سداد طلبك، وبيانات تثبيت شريحتك جاهزة.",
@@ -906,6 +985,16 @@ export default async request => {
 
         <p>رقم الشريحة ICCID:</p>
         <code>${escape(sim.iccid)}</code>
+
+        <section id="bundle-usage">
+          <h2>استهلاك الباقة وصلاحيتها</h2>
+          ${usage}
+          <p>
+            <a class="button" href="${escape(resultUrl.toString())}">
+              تحديث الاستهلاك
+            </a>
+          </p>
+        </section>
 
         <p>
           <a class="button"
