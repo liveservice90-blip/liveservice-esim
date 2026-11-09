@@ -584,6 +584,31 @@ footer {
   outline: 2px solid var(--teal);
   outline-offset: 3px;
 }
+.app-store-links {
+  display: flex;
+  direction: ltr;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(8px, 3vw, 16px);
+  margin-bottom: 16px;
+}
+.app-store-links a {
+  display: block;
+  width: min(46%, 202px);
+  aspect-ratio: 404 / 120;
+  border-radius: 13px;
+  background: url("assets/app-store-badges.jpeg") 27.95% 38.83% / 317.82% 185.83% no-repeat;
+}
+.app-store-links .apple-store-badge {
+  width: min(41%, 180px);
+  aspect-ratio: 360 / 120;
+  background-position: 73.70% 38.83%;
+  background-size: 356.67% 185.83%;
+}
+.app-store-links a:focus-visible {
+  outline: 3px solid #087f85;
+  outline-offset: 4px;
+}
 </style>
 <link rel="stylesheet" href="/assets/esim-artwork.css">
 </head>
@@ -808,7 +833,13 @@ data-i18n="رجوع إلى الباقات">رجوع إلى الباقات</a>
 data-i18n="الرجوع للصفحة الرئيسية">الرجوع للصفحة الرئيسية</a>
 </div>
 
-<footer>LiveService © 2026 · info@liveservice-sa.com</footer>
+<footer>
+  <div class="app-store-links">
+    <a href="https://play.google.com/store/apps/details?id=com.aait.flutter.liveService" aria-label="Google Play"></a>
+    <a class="apple-store-badge" href="https://apps.apple.com/sa/app/id6502643454" aria-label="App Store"></a>
+  </div>
+  LiveService © 2026 · info@liveservice-sa.com
+</footer>
 
 <script>
 (() => {
