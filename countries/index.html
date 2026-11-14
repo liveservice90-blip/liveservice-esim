@@ -3,108 +3,513 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>جميع دول شرائح النت | LiveService eSIM</title>
-<meta name="description" content="استعرض وجهات شرائح النت المتاحة من LiveService eSIM واختر الدولة لعرض باقاتها وأسعارها الحالية.">
+
+<title>وجهات شرائح النت eSIM للسفر | جميع الدول – LiveService</title>
+<meta name="description" content="ابحث عن وجهتك واستعرض باقات شرائح الإنترنت الإلكترونية eSIM من LiveService. اكتشف أدلة الدول وقارن البيانات والصلاحية والأسعار المتاحة قبل الشراء.">
 <link rel="canonical" href="https://liveservice-esim.netlify.app/countries/">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_SA">
+<meta property="og:site_name" content="LiveService eSIM">
+<meta property="og:title" content="وجهات شرائح النت eSIM للسفر | LiveService">
+<meta property="og:description" content="اختر وجهتك، واستعرض أدلة الدول وباقات الإنترنت المتاحة للسفر.">
+<meta property="og:url" content="https://liveservice-esim.netlify.app/countries/">
+
 <style>
-body{margin:0;background:#f5f8f8;color:#183b41;font:18px Tahoma,Arial}
-main{max-width:900px;margin:auto;padding:24px}
-a{color:#087f85}
-header{display:flex;justify-content:space-between;align-items:center;gap:20px}
-header img{width:150px;height:auto}
-.panel{background:white;padding:24px;border-radius:22px;margin:24px 0;line-height:1.9}
-.country-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-button{font:inherit;padding:14px;border:1px solid #d4e3e3;background:white;border-radius:12px;color:#183b41;cursor:pointer}
-h1{color:#4833b7}
-nav{display:flex;gap:15px;flex-wrap:wrap}
-input{box-sizing:border-box;font:inherit;width:100%;padding:14px;margin:16px 0;border:1px solid #d4e3e3;border-radius:12px}
+:root{
+  --teal:#087f85;
+  --deep:#043e43;
+  --gold:#cda552;
+  --pearl:#faf7f1;
+  --ink:#183b41;
+  --muted:#52676b;
+  --line:#dce7e7;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:#f5f8f8;
+  color:var(--ink);
+  font-family:Tahoma,Arial,sans-serif;
+  font-size:18px;
+  line-height:1.9;
+}
+main{max-width:1000px;margin:auto;padding:24px}
+a{color:var(--teal);text-underline-offset:5px}
+a:focus-visible,button:focus-visible,input:focus-visible{
+  outline:3px solid var(--gold);
+  outline-offset:4px;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  padding:8px 0 20px;
+}
+header img{
+  display:block;
+  width:150px;
+  max-width:100%;
+  height:auto;
+}
+.breadcrumb{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  font-size:15px;
+  color:var(--muted);
+}
+.panel{
+  background:#fff;
+  padding:30px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  margin:22px 0;
+}
+.hero{
+  background:linear-gradient(135deg,#fff,var(--pearl));
+  border-top:5px solid var(--teal);
+}
+.eyebrow{
+  margin:0 0 10px;
+  color:var(--teal);
+  font-size:16px;
+  font-weight:bold;
+}
+h1,h2,h3{color:var(--deep);line-height:1.5}
+h1{font-size:clamp(28px,5vw,40px);margin:0 0 18px}
+h2{font-size:26px;margin:0 0 16px}
+h3{font-size:21px;margin:0 0 10px}
+p{margin:0 0 16px}
+p:last-child{margin-bottom:0}
+.destination-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.destination{
+  display:block;
+  padding:20px;
+  background:#f5f9f9;
+  border:1px solid var(--line);
+  border-radius:16px;
+  text-decoration:none;
+}
+.destination:hover{
+  border-color:var(--teal);
+  background:var(--pearl);
+}
+.destination strong{
+  display:block;
+  color:var(--deep);
+  margin-bottom:5px;
+}
+.destination span{
+  display:block;
+  color:var(--muted);
+  font-size:16px;
+}
+.jump{
+  display:inline-block;
+  background:var(--teal);
+  color:#fff;
+  border-radius:12px;
+  padding:12px 22px;
+  text-decoration:none;
+  font-weight:bold;
+  margin-top:8px;
+}
+label{display:block;font-weight:bold}
+input{
+  font:inherit;
+  width:100%;
+  padding:14px;
+  margin:10px 0;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+  color:var(--ink);
+}
+.hint{color:var(--muted);font-size:15px}
+.country-list{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.country-link{
+  display:block;
+  padding:14px;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:12px;
+  text-align:center;
+  text-decoration:none;
+  color:var(--deep);
+}
+.country-link:hover{
+  background:#f0f8f8;
+  border-color:var(--teal);
+}
+button{
+  font:inherit;
+  padding:12px 22px;
+  border:0;
+  background:var(--teal);
+  border-radius:12px;
+  color:#fff;
+  cursor:pointer;
+}
+#status{margin:12px 0 18px}
+#status[data-state="loading"]{color:#b42318}
+#status[data-state="error"]{color:#b42318}
+#retry{margin-top:16px}
+.steps{padding-inline-start:26px;margin:12px 0}
+.steps li{margin-bottom:12px}
+.steps li:last-child{margin-bottom:0}
+.note{
+  background:var(--pearl);
+  border-right:4px solid var(--gold);
+  border-radius:10px;
+  padding:16px 20px;
+  margin-top:20px;
+}
+footer{
+  text-align:center;
+  color:var(--muted);
+  padding:20px 0;
+  font-size:15px;
+}
+@media(max-width:650px){
+  main{padding:16px}
+  .panel{padding:22px}
+  h2{font-size:24px}
+  header img{width:130px}
+  .destination-grid{grid-template-columns:1fr}
+  .country-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:360px){
+  .country-list{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+}
 </style>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"BreadcrumbList",
+  "itemListElement":[
+    {
+      "@type":"ListItem",
+      "position":1,
+      "name":"الرئيسية",
+      "item":"https://liveservice-esim.netlify.app/"
+    },
+    {
+      "@type":"ListItem",
+      "position":2,
+      "name":"وجهات شرائح النت",
+      "item":"https://liveservice-esim.netlify.app/countries/"
+    }
+  ]
+}
+</script>
 </head>
+
 <body>
 <main>
 <header>
-<a href="/"><img src="/assets/liveservice-logo.png" alt="خدمة مباشرة"></a>
-<a href="/">الرئيسية</a>
+  <a href="/" aria-label="متجر LiveService eSIM — الرئيسية">
+    <img src="/assets/liveservice-logo.png"
+         alt="خدمة مباشرة LiveService">
+  </a>
+  <a href="/">الرئيسية</a>
 </header>
 
-<section class="panel">
-<h1>جميع وجهات شرائح النت</h1>
-<p>القائمة التالية تُحمّل من الباقات المتاحة في المتجر. اضغط الدولة لعرض باقاتها وأسعارها الحالية.</p>
-<label for="filter">ابحث باسم الدولة</label>
-<input id="filter" type="search" placeholder="اكتب اسم الدولة">
-<p id="status" role="status">جارٍ تحميل الدول…</p>
-<div id="countries" class="country-list"></div>
-<button id="retry" hidden>إعادة المحاولة</button>
+<nav class="breadcrumb" aria-label="مسار الصفحة">
+  <a href="/">الرئيسية</a>
+  <span aria-hidden="true">/</span>
+  <span aria-current="page">وجهات شرائح النت</span>
+</nav>
+
+<section class="panel hero">
+  <p class="eyebrow">LiveService eSIM • إنترنت السفر</p>
+  <h1>وجهات شرائح النت الإلكترونية eSIM</h1>
+  <p>
+    اختر وجهة سفرك لاستعراض باقات الإنترنت المتاحة،
+    وقارن حجم البيانات ومدة الصلاحية والسعر.
+    ويمكنك البدء بأدلة الوجهات التالية لمعرفة
+    ما ينبغي مراجعته قبل شراء الشريحة.
+  </p>
+  <a class="jump" href="#all-countries">ابحث عن دولتك</a>
+</section>
+
+<section class="panel" aria-labelledby="guides-title">
+  <h2 id="guides-title">أدلة وجهات السفر</h2>
+  <p>
+    تعرّف على اختيار الباقة والتوافق والتغطية
+    وخطوات التثبيت والتفعيل لكل وجهة.
+  </p>
+
+  <nav class="destination-grid" aria-label="أدلة شرائح النت حسب الوجهة">
+    <a class="destination" href="/destinations/turkey/">
+      <strong>🇹🇷 شرائح نت تركيا</strong>
+      <span>اختيار الباقة ومراجعة التغطية لرحلتك إلى تركيا.</span>
+    </a>
+
+    <a class="destination" href="/destinations/saudi-arabia/">
+      <strong>🇸🇦 شرائح نت السعودية</strong>
+      <span>باقات الإنترنت للسفر والزيارة والعمرة.</span>
+    </a>
+
+    <a class="destination" href="/destinations/egypt/">
+      <strong>🇪🇬 شرائح نت مصر</strong>
+      <span>البيانات والصلاحية والاستعداد للتنقل أثناء الزيارة.</span>
+    </a>
+
+    <a class="destination" href="/destinations/uae/">
+      <strong>🇦🇪 شرائح نت الإمارات</strong>
+      <span>اختيار باقة لزيارة دبي وأبوظبي وغيرها.</span>
+    </a>
+
+    <a class="destination" href="/destinations/morocco/">
+      <strong>🇲🇦 شرائح نت المغرب</strong>
+      <span>مقارنة المدد والبيانات وشروط الاستخدام.</span>
+    </a>
+
+    <a class="destination" href="/destinations/thailand/">
+      <strong>🇹🇭 شرائح نت تايلاند</strong>
+      <span>الاستعداد للإنترنت أثناء التنقل بين الوجهات.</span>
+    </a>
+
+    <a class="destination" href="/destinations/indonesia/">
+      <strong>🇮🇩 شرائح نت إندونيسيا</strong>
+      <span>اختيار الباقة لزيارة بالي وجاكرتا وغيرها.</span>
+    </a>
+
+    <a class="destination" href="/destinations/bosnia/">
+      <strong>🇧🇦 شرائح نت البوسنة والهرسك</strong>
+      <span>مراجعة تغطية الدولة والباقات متعددة الوجهات.</span>
+    </a>
+  </nav>
+</section>
+
+<section class="panel" id="all-countries" aria-labelledby="countries-title">
+  <h2 id="countries-title">ابحث في الدول المتاحة بالمتجر</h2>
+  <p>
+    تُحمّل القائمة من الدول المشمولة في الباقات المتاحة.
+    اضغط اسم الدولة للانتقال إلى نتائج باقاتها في المتجر.
+  </p>
+
+  <label for="filter">اسم الدولة</label>
+  <input
+    id="filter"
+    type="search"
+    placeholder="مثال: تركيا، السعودية، إندونيسيا"
+    aria-describedby="filter-hint"
+    aria-controls="countries"
+    autocomplete="off"
+    disabled
+  >
+  <p class="hint" id="filter-hint">
+    يمكنك البحث بالاسم العربي أو الإنجليزي أو رمز الدولة.
+  </p>
+
+  <p id="status" role="status" aria-live="polite" data-state="loading">
+    جارٍ تحميل الدول…
+  </p>
+  <div id="countries" class="country-list" aria-busy="true"></div>
+  <button id="retry" type="button" hidden>إعادة المحاولة</button>
+
+  <noscript>
+    <p>
+      يتطلب تحميل القائمة الكاملة تفعيل JavaScript.
+      يمكنك استخدام أدلة الوجهات أعلاه أو
+      <a href="/">العودة إلى المتجر</a>.
+    </p>
+  </noscript>
 </section>
 
 <section class="panel">
-<h2>وجهات مختارة</h2>
-<nav>
-<a href="/destinations/turkey/">شرائح نت تركيا</a>
-<a href="/destinations/saudi-arabia/">شرائح نت السعودية</a>
-<a href="/destinations/egypt/">شرائح نت مصر</a>
-<a href="/destinations/uae/">شرائح نت الإمارات</a>
-</nav>
+  <h2>كيف تختار باقة مناسبة لوجهتك؟</h2>
+  <ol class="steps">
+    <li>
+      اختر الدولة، ثم قارن حجم البيانات ومدة الصلاحية والسعر.
+    </li>
+    <li>
+      تحقق من توافق جهازك مع eSIM وإمكانية استخدام مزود آخر.
+    </li>
+    <li>
+      راجع الدول والشبكات المشمولة وشروط بدء صلاحية الباقة.
+    </li>
+    <li>
+      اقرأ تفاصيل السرعة والاستخدام العادل ومشاركة الإنترنت
+      إذا كانت هذه الميزات مهمة لرحلتك.
+    </li>
+  </ol>
+  <div class="note">
+    إذا كانت رحلتك تشمل أكثر من دولة، فتأكد من وجود
+    جميع وجهاتك في قائمة تغطية الباقة نفسها قبل الدفع.
+    الأسعار والتوفر قابلان للتغيير.
+  </div>
 </section>
-<a href="/">العودة للمتجر</a>
+
+<nav aria-label="روابط المساعدة">
+  <a href="/">العودة إلى المتجر</a>
+  <span aria-hidden="true"> · </span>
+  <a href="mailto:liveservicesupport@gmail.com">تواصل مع الدعم</a>
+</nav>
+
+<footer>LiveService eSIM — خدمة مباشرة</footer>
 </main>
 
 <script>
+'use strict';
+
 let rows = [];
+
 const box = document.getElementById('countries');
 const statusText = document.getElementById('status');
 const filter = document.getElementById('filter');
 const retry = document.getElementById('retry');
 
-function render() {
-  box.replaceChildren();
-  let count = 0;
-  for (const [iso, name] of rows) {
-    if (!name.includes(filter.value.trim())) continue;
-    count++;
-    const button = document.createElement('button');
-    button.textContent = name;
-    button.onclick = () => {
-      location.href = '/?country=' + encodeURIComponent(iso) + '#plans';
-    };
-    box.append(button);
+const excludedCountries = new Set(['IL']);
+
+function normalize(value) {
+  return String(value || '')
+    .normalize('NFKD')
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .toLocaleLowerCase('ar')
+    .trim();
+}
+
+function createDisplayNames(language) {
+  try {
+    return new Intl.DisplayNames([language], {type:'region'});
+  } catch {
+    return null;
   }
-  statusText.textContent = count
-    ? 'عدد الدول: ' + count
-    : 'لا توجد دول مطابقة';
+}
+
+function displayName(displayNames, iso, fallback) {
+  try {
+    return displayNames?.of(iso) || fallback || iso;
+  } catch {
+    return fallback || iso;
+  }
+}
+
+function render() {
+  const query = normalize(filter.value);
+  const fragment = document.createDocumentFragment();
+  let count = 0;
+
+  for (const country of rows) {
+    if (query && !country.search.includes(query)) continue;
+
+    const link = document.createElement('a');
+    link.className = 'country-link';
+    link.href = '/?country=' + encodeURIComponent(country.iso) + '#plans';
+    link.textContent = country.name;
+
+    fragment.append(link);
+    count++;
+  }
+
+  box.replaceChildren(fragment);
+  statusText.dataset.state = 'ready';
+
+  if (!rows.length) {
+    statusText.textContent = 'لا توجد دول متاحة حاليًا.';
+  } else if (!count) {
+    statusText.textContent = 'لا توجد دول مطابقة. جرّب اسمًا آخر.';
+  } else {
+    statusText.textContent = query
+      ? 'عدد الدول المطابقة: ' + count
+      : 'عدد الدول المتاحة: ' + count;
+  }
 }
 
 async function load() {
   retry.hidden = true;
+  filter.disabled = true;
+  box.setAttribute('aria-busy', 'true');
+  statusText.dataset.state = 'loading';
   statusText.textContent = 'جارٍ تحميل الدول…';
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+
   try {
-    const response = await fetch('/.netlify/functions/catalogue');
-    const data = await response.json();
-    if (!response.ok || !Array.isArray(data.bundles)) {
+    const response = await fetch('/.netlify/functions/catalogue', {
+      signal: controller.signal,
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
       throw new Error('تعذر تحميل الباقات');
     }
-    const names = new Intl.DisplayNames(['ar'], {type: 'region'});
+
+    const data = await response.json();
+
+    if (!Array.isArray(data.bundles)) {
+      throw new Error('بيانات الباقات غير متاحة');
+    }
+
+    const arabicNames = createDisplayNames('ar');
+    const englishNames = createDisplayNames('en');
     const countries = new Map();
-    data.bundles.forEach(bundle => {
-      (bundle.countries || []).forEach(country => {
-        if (/^[A-Z]{2}$/.test(country.iso)) {
-          countries.set(
-            country.iso,
-            names.of(country.iso) || country.name || country.iso
-          );
-        }
-      });
-    });
-    rows = [...countries].sort((a, b) => a[1].localeCompare(b[1], 'ar'));
+
+    for (const bundle of data.bundles) {
+      if (!Array.isArray(bundle?.countries)) continue;
+
+      for (const country of bundle.countries) {
+        const iso = String(country?.iso || '').trim().toUpperCase();
+
+        if (!/^[A-Z]{2}$/.test(iso)) continue;
+        if (excludedCountries.has(iso)) continue;
+
+        const originalName = String(country?.name || '').trim();
+        const name = displayName(arabicNames, iso, originalName);
+        const englishName = displayName(englishNames, iso, originalName);
+
+        countries.set(iso, {
+          iso,
+          name,
+          search: normalize(
+            [name, englishName, originalName, iso].join(' ')
+          )
+        });
+      }
+    }
+
+    rows = [...countries.values()].sort(
+      (a, b) => a.name.localeCompare(b.name, 'ar')
+    );
+
+    filter.disabled = false;
     render();
-  } catch (error) {
-    statusText.textContent = 'تعذر تحميل الدول. حاول مجددًا أو ابحث عن وجهتك من الصفحة الرئيسية.';
+  } catch {
+    box.replaceChildren();
+    statusText.dataset.state = 'error';
+    statusText.textContent =
+      'تعذر تحميل الدول. أعد المحاولة، أو استخدم أدلة الوجهات أعلاه أو ابحث من الصفحة الرئيسية.';
     retry.hidden = false;
+  } finally {
+    clearTimeout(timeout);
+    box.setAttribute('aria-busy', 'false');
   }
 }
 
-filter.oninput = render;
-retry.onclick = load;
+filter.addEventListener('input', render);
+retry.addEventListener('click', load);
+
 load();
 </script>
 </body>
