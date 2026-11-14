@@ -3,41 +3,472 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>شرائح نت البوسنة والهرسك للسفر | LiveService eSIM</title>
-<meta name="description" content="استعرض باقات شرائح نت البوسنة والهرسك من LiveService eSIM وقارن حجم البيانات ومدة الصلاحية والسعر قبل الشراء.">
+
+<title>شريحة نت البوسنة والهرسك eSIM | باقات السفر – LiveService</title>
+<meta name="description" content="استعرض باقات شريحة نت البوسنة والهرسك eSIM من LiveService. قارن البيانات والصلاحية والسعر، وراجع التغطية وتوافق جهازك وتعليمات التفعيل قبل الشراء.">
 <link rel="canonical" href="https://liveservice-esim.netlify.app/destinations/bosnia/">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_SA">
+<meta property="og:site_name" content="LiveService eSIM">
+<meta property="og:title" content="شريحة نت البوسنة والهرسك eSIM | LiveService">
+<meta property="og:description" content="قارن باقات الإنترنت لرحلتك إلى البوسنة والهرسك، وراجع التغطية والصلاحية وخطوات التفعيل قبل الشراء.">
+<meta property="og:url" content="https://liveservice-esim.netlify.app/destinations/bosnia/">
+
 <style>
-body{margin:0;background:#f5f8f8;color:#183b41;font:18px Tahoma,Arial}
-main{max-width:900px;margin:auto;padding:24px}
-a{color:#087f85}
-header{display:flex;justify-content:space-between;align-items:center;gap:20px}
-header img{width:150px;height:auto}
-.panel{background:white;padding:24px;border-radius:22px;margin:24px 0;line-height:1.9}
-.btn{display:inline-block;background:#087f85;color:white;border-radius:12px;padding:12px 24px;text-decoration:none}
-h1{color:#4833b7}
-nav{display:flex;gap:20px;flex-wrap:wrap}
+:root{
+  --teal:#087f85;
+  --deep:#043e43;
+  --gold:#cda552;
+  --pearl:#faf7f1;
+  --ink:#183b41;
+  --muted:#52676b;
+  --line:#dce7e7;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:#f5f8f8;
+  color:var(--ink);
+  font-family:Tahoma,Arial,sans-serif;
+  font-size:18px;
+  line-height:1.9;
+}
+main{max-width:1000px;margin:auto;padding:24px}
+a{color:var(--teal);text-underline-offset:5px}
+a:focus-visible,summary:focus-visible{
+  outline:3px solid var(--gold);
+  outline-offset:5px;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  padding:8px 0 20px;
+}
+header img{
+  display:block;
+  width:150px;
+  max-width:100%;
+  height:auto;
+}
+.breadcrumb{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  font-size:15px;
+  color:var(--muted);
+}
+.panel{
+  background:#fff;
+  padding:30px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  margin:22px 0;
+}
+.hero{
+  background:linear-gradient(135deg,#fff,var(--pearl));
+  border-top:5px solid var(--teal);
+}
+.eyebrow{
+  margin:0 0 10px;
+  color:var(--teal);
+  font-size:16px;
+  font-weight:bold;
+}
+h1,h2,h3{color:var(--deep);line-height:1.5}
+h1{font-size:clamp(28px,5vw,40px);margin:0 0 18px}
+h2{font-size:26px;margin:0 0 16px}
+h3{font-size:21px;margin:0 0 10px}
+p{margin:0 0 16px}
+p:last-child{margin-bottom:0}
+.btn{
+  display:inline-block;
+  background:var(--teal);
+  colorfff:initial;
+  color:#fff;
+  border-radius:12px;
+  padding:13px 24px;
+  text-decoration:none;
+  font-weight:bold;
+  text-align:center;
+}
+.btn:hover{background:var(--deep)}
+.actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:18px;
+  margin-top:22px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+.card{
+  background:#f5f9f9;
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:16px;
+}
+.note{
+  background:var(--pearl);
+  border-right:4px solid var(--gold);
+  border-radius:10px;
+  padding:16px 20px;
+  margin-top:20px;
+}
+ul,ol{padding-inline-start:26px;margin:12px 0}
+li{margin-bottom:12px}
+li:last-child{margin-bottom:0}
+details{border-bottom:1px solid var(--line);padding:16px 0}
+details:last-child{border-bottom:0}
+summary{color:var(--deep);font-weight:bold;cursor:pointer}
+details p{margin:14px 0 0}
+nav.links{display:flex;gap:20px;flex-wrap:wrap}
+footer{
+  text-align:center;
+  color:var(--muted);
+  padding:20px 0;
+  font-size:15px;
+}
+@media(max-width:650px){
+  main{padding:16px}
+  .panel{padding:22px}
+  .grid{grid-template-columns:1fr}
+  h2{font-size:24px}
+  header img{width:130px}
+  .actions .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+}
 </style>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"BreadcrumbList",
+  "itemListElement":[
+    {
+      "@type":"ListItem",
+      "position":1,
+      "name":"الرئيسية",
+      "item":"https://liveservice-esim.netlify.app/"
+    },
+    {
+      "@type":"ListItem",
+      "position":2,
+      "name":"جميع الدول",
+      "item":"https://liveservice-esim.netlify.app/countries/"
+    },
+    {
+      "@type":"ListItem",
+      "position":3,
+      "name":"شرائح نت البوسنة والهرسك",
+      "item":"https://liveservice-esim.netlify.app/destinations/bosnia/"
+    }
+  ]
+}
+</script>
 </head>
+
 <body>
 <main>
 <header>
-<a href="/"><img src="/assets/liveservice-logo.png" alt="خدمة مباشرة"></a>
-<a href="/">الرئيسية</a>
+  <a href="/" aria-label="متجر LiveService eSIM — الرئيسية">
+    <img src="/assets/liveservice-logo.png"
+         alt="خدمة مباشرة LiveService">
+  </a>
+  <a href="/">الرئيسية</a>
 </header>
-<section class="panel">
-<h1>🇧🇦 شرائح نت البوسنة والهرسك للسفر</h1>
-<p>استعرض باقات الإنترنت الإلكترونية eSIM المتاحة للبوسنة والهرسك عبر متجر LiveService، وقارن حجم البيانات ومدة الصلاحية والسعر قبل الاختيار.</p>
-<a class="btn" href="/?country=BA#plans">استعرض باقات البوسنة والهرسك</a>
-</section>
-<section class="panel">
-<h2>التثبيت والتفعيل</h2>
-<p>بعد تأكيد الدفع وإصدار الشريحة تظهر بيانات التثبيت في صفحة نتيجة الطلب. استخدم اتصال إنترنت مستقرًا واتبع تعليمات الشريحة وجهازك. احتفظ برقم الطلب وبيانات التثبيت.</p>
-<p>راجع الأسعار والتوفر والتغطية وشروط التفعيل في تفاصيل الباقة وقت الاختيار.</p>
-</section>
-<nav>
-<a href="/countries/">جميع الدول</a>
-<a href="/">العودة للمتجر</a>
+
+<nav class="breadcrumb" aria-label="مسار الصفحة">
+  <a href="/">الرئيسية</a>
+  <span aria-hidden="true">/</span>
+  <a href="/countries/">جميع الدول</a>
+  <span aria-hidden="true">/</span>
+  <span aria-current="page">البوسنة والهرسك</span>
 </nav>
+
+<section class="panel hero">
+  <p class="eyebrow">LiveService eSIM • إنترنت السفر</p>
+  <h1>🇧🇦 شريحة نت البوسنة والهرسك eSIM للسفر</h1>
+  <p>
+    تخطط لزيارة البوسنة والهرسك؟ استعرض باقات الإنترنت
+    الإلكترونية المتاحة عبر LiveService، وقارن حجم
+    البيانات ومدة الصلاحية والسعر لاختيار ما يناسب رحلتك.
+  </p>
+  <p>
+    قبل الشراء، تحقق من دعم جهازك لشريحة eSIM،
+    وراجع الدول والشبكات المشمولة في الباقة
+    وشروط بدء صلاحيتها.
+  </p>
+  <div class="actions">
+    <a class="btn" href="/?country=BA#plans">
+      استعرض باقات البوسنة والهرسك
+    </a>
+    <a href="#before-buying">ما الذي أراجعه قبل الشراء؟</a>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>كيف تختار باقة الإنترنت لرحلتك؟</h2>
+  <div class="grid">
+    <article class="card">
+      <h3>مدة السفر</h3>
+      <p>
+        اختر صلاحية تغطي أيام زيارتك، وراجع وقت
+        بدء احتسابها قبل تثبيت الشريحة.
+      </p>
+    </article>
+    <article class="card">
+      <h3>استخدام البيانات</h3>
+      <p>
+        احسب احتياجك للخرائط والمراسلة والحجوزات.
+        الفيديو ورفع الصور قد يتطلبان بيانات أكثر.
+      </p>
+    </article>
+    <article class="card">
+      <h3>مسار الرحلة</h3>
+      <p>
+        إذا كنت ستزور دولًا أخرى، فقارن قائمة
+        التغطية لكل باقة مع مسار سفرك الفعلي.
+      </p>
+    </article>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>الاستعداد للتنقل في سراييفو وموستار</h2>
+  <p>
+    إذا كانت رحلتك تشمل سراييفو أو موستار أو بيهاتش
+    أو وجهات أخرى، فضع في حسابك استخدام الخرائط
+    والوصول إلى حجوزات السكن ومعلومات التنقل
+    والتواصل مع المرافقين.
+  </p>
+  <p>
+    احتفظ بعنوان الإقامة وتفاصيل الحجز والخرائط
+    اللازمة متاحة دون إنترنت، خاصة إذا كان
+    برنامجك يشمل طرقًا جبلية أو مواقع بعيدة.
+  </p>
+</section>
+
+<section class="panel" id="before-buying">
+  <h2>قبل شراء شريحة البوسنة والهرسك الإلكترونية</h2>
+  <ul>
+    <li>
+      <strong>توافق الجهاز:</strong>
+      تحقق من دعم طراز الهاتف ونسخته الإقليمية
+      لشريحة eSIM، ومن السماح باستخدام مزود آخر.
+    </li>
+    <li>
+      <strong>الدولة المشمولة:</strong>
+      تأكد من إدراج البوسنة والهرسك في قائمة
+      الدول المشمولة بالباقة التي اخترتها.
+    </li>
+    <li>
+      <strong>نوع الخدمة:</strong>
+      راجع هل الباقة للبيانات فقط، أم تشمل رقم هاتف
+      ومكالمات أو رسائل نصية.
+    </li>
+    <li>
+      <strong>الصلاحية والسرعة:</strong>
+      راجع بداية المدة وحجم البيانات وأي حد يومي
+      أو تخفيض للسرعة أو سياسة استخدام عادل.
+    </li>
+    <li>
+      <strong>مشاركة الإنترنت:</strong>
+      تحقق من دعم نقطة الاتصال إذا كنت تحتاج
+      توصيل حاسوب أو هاتف آخر.
+    </li>
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>هل باقات أوروبا تشمل البوسنة والهرسك؟</h2>
+  <p>
+    لا تعتمد على اسم «أوروبا» وحده عند اختيار
+    باقة إقليمية. افتح قائمة الدول المشمولة
+    وتأكد من وجود البوسنة والهرسك بالاسم.
+  </p>
+  <p>
+    وإذا كانت رحلتك تشمل تركيا أو كرواتيا أو
+    الجبل الأسود أو دولًا أخرى، فتحقق من إدراج
+    كل دولة في الباقة نفسها قبل الدفع.
+  </p>
+  <div class="note">
+    ظهور باقة ضمن نتائج دولة معينة لا يعني أنها
+    تشمل جميع الدول المجاورة أو كل الوجهات الأوروبية.
+    المرجع هو قائمة التغطية الخاصة بالباقة.
+  </div>
+</section>
+
+<section class="panel">
+  <h2>التغطية والشبكات داخل البوسنة والهرسك</h2>
+  <p>
+    تختلف الشبكات المتاحة بحسب الباقة. راجع أسماء
+    المشغّلين في تفاصيل الخيار الذي تنوي شراءه
+    إذا كانت معروضة، أو تواصل مع الدعم للاستفسار.
+  </p>
+  <p>
+    قد تختلف جودة الاتصال والسرعة حسب الموقع
+    والتضاريس والتغطية المحلية وازدحام الشبكة
+    والجهاز المستخدم. شمول الدولة لا يعني
+    ضمان الاتصال في كل موقع داخلها.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>طريقة شراء الشريحة وتثبيتها وتفعيلها</h2>
+  <ol>
+    <li>
+      افتح <a href="/?country=BA#plans">باقات البوسنة والهرسك</a>
+      وقارن البيانات والصلاحية والسعر.
+    </li>
+    <li>
+      راجع توافق جهازك والتغطية وشروط التفعيل،
+      ثم أكمل الطلب والدفع.
+    </li>
+    <li>
+      بعد تأكيد الدفع وإصدار الشريحة، احتفظ برقم الطلب
+      وبيانات التثبيت الظاهرة في صفحة نتيجة الطلب.
+    </li>
+    <li>
+      استخدم اتصال إنترنت مستقرًا واتبع تعليمات
+      إضافة eSIM إلى جهازك.
+    </li>
+    <li>
+      عند الاستخدام داخل نطاق التغطية، اختر الشريحة
+      لبيانات الجوال واضبط تجوال البيانات وأي إعدادات
+      إضافية وفق تعليماتها.
+    </li>
+  </ol>
+  <div class="note">
+    راجع توقيت بدء الصلاحية قبل التثبيت، ولا تحذف
+    الشريحة عند مواجهة مشكلة قبل التأكد من إمكانية
+    إعادة تثبيتها أو التواصل مع الدعم.
+  </div>
+</section>
+
+<section class="panel">
+  <h2>أسئلة شائعة عن شرائح نت البوسنة والهرسك</h2>
+
+  <details>
+    <summary>هل تعمل شريحة eSIM على جميع الهواتف؟</summary>
+    <p>
+      لا. تحقق من دعم طراز الهاتف ونسخته الإقليمية
+      لشريحة eSIM، ومن إمكانية استخدام مزود آخر
+      قبل إكمال الشراء.
+    </p>
+  </details>
+
+  <details>
+    <summary>هل أحتاج باقة مختلفة لسراييفو وموستار؟</summary>
+    <p>
+      راجع الباقات التي تشمل البوسنة والهرسك
+      وتفاصيل شبكاتها وتغطيتها. لا تفترض الحاجة
+      إلى باقة مستقلة لكل مدينة، وتحقق من المواقع
+      التي تنوي زيارتها.
+    </p>
+  </details>
+
+  <details>
+    <summary>هل تشمل كل باقات أوروبا البوسنة والهرسك؟</summary>
+    <p>
+      لا تفترض ذلك من الاسم. تحقق من إدراج
+      البوسنة والهرسك ضمن قائمة الدول المشمولة
+      في الباقة المحددة.
+    </p>
+  </details>
+
+  <details>
+    <summary>هل تعمل الباقة في تركيا أيضًا؟</summary>
+    <p>
+      فقط إذا كانت تركيا مذكورة ضمن تغطية
+      الباقة نفسها. شمول البوسنة والهرسك
+      لا يعني شمول تركيا تلقائيًا.
+    </p>
+  </details>
+
+  <details>
+    <summary>هل تشمل الباقة رقم هاتف محليًا؟</summary>
+    <p>
+      يعتمد ذلك على المزايا المذكورة في التفاصيل.
+      باقة البيانات فقط لا تعني الحصول على
+      رقم محلي أو مكالمات ورسائل تقليدية.
+    </p>
+  </details>
+
+  <details>
+    <summary>متى تبدأ مدة صلاحية الباقة؟</summary>
+    <p>
+      تختلف حسب شروط الشريحة والباقة؛ فقد ترتبط
+      بالتثبيت أو التفعيل أو الاتصال بشبكة مدعومة.
+      راجع التعليمات قبل التثبيت.
+    </p>
+  </details>
+
+  <details>
+    <summary>هل أستطيع مشاركة الإنترنت مع جهاز آخر؟</summary>
+    <p>
+      يعتمد ذلك على شروط الباقة ودعم جهازك
+      لنقطة الاتصال. تحقق من التفاصيل قبل
+      الشراء إذا كانت المشاركة ضرورية لك.
+    </p>
+  </details>
+
+  <details>
+    <summary>كيف أعرف الأسعار والباقات المتاحة؟</summary>
+    <p>
+      افتح نتائج باقات البوسنة والهرسك في المتجر
+      للاطلاع على البيانات والمدة والسعر وقت
+      الاختيار. الأسعار والتوفر قابلان للتغيير.
+    </p>
+  </details>
+
+  <details>
+    <summary>ماذا أفعل إذا لم يعمل الإنترنت بعد التثبيت؟</summary>
+    <p>
+      تحقق من اختيار eSIM لبيانات الجوال، ووجودك
+      داخل نطاق التغطية، وضبط تجوال البيانات
+      والإعدادات وفق تعليمات الشريحة.
+      إذا استمرت المشكلة، تواصل مع الدعم برقم الطلب،
+      ولا تنشر رمز QR أو بيانات التثبيت علنًا.
+    </p>
+  </details>
+</section>
+
+<section class="panel">
+  <h2>اختر باقة البوسنة والهرسك المناسبة لرحلتك</h2>
+  <p>
+    قارن الخيارات حسب مدة الزيارة واستخدامك للإنترنت،
+    وراجع السعر والتغطية وشروط الباقة قبل الشراء.
+  </p>
+  <div class="actions">
+    <a class="btn" href="/?country=BA#plans">
+      عرض باقات البوسنة والهرسك
+    </a>
+    <a href="mailto:liveservicesupport@gmail.com">
+      تواصل مع الدعم
+    </a>
+  </div>
+</section>
+
+<nav class="links" aria-label="روابط المتجر">
+  <a href="/countries/">استعرض جميع الدول</a>
+  <a href="/destinations/turkey/">شرائح نت تركيا</a>
+  <a href="/destinations/saudi-arabia/">شرائح نت السعودية</a>
+  <a href="/destinations/uae/">شرائح نت الإمارات</a>
+  <a href="/">العودة إلى المتجر</a>
+</nav>
+
+<footer>
+  LiveService eSIM — خدمة مباشرة
+</footer>
 </main>
 </body>
 </html>
